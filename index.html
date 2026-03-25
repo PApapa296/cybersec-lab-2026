@@ -1,0 +1,2016 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>サイバーセキュリティ体験ラボ</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Noto+Sans+JP:wght@400;700;900&family=Creepster&display=swap');
+
+:root {
+  --bg: #0a0e17;
+  --surface: #111827;
+  --surface2: #1a2234;
+  --border: #1e2d44;
+  --green: #00ff88;
+  --red: #ff3366;
+  --orange: #ff8800;
+  --yellow: #ffdd00;
+  --cyan: #00ddff;
+  --text: #c8d6e5;
+  --text-dim: #6b7c93;
+  --mono: 'Share Tech Mono', monospace;
+  --sans: 'Noto Sans JP', sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh;overflow-x:hidden}
+body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,255,136,.015) 2px,rgba(0,255,136,.015) 4px);pointer-events:none;z-index:50}
+
+/* Glitch effect class */
+@keyframes glitch1{0%{clip-path:inset(20% 0 60% 0);transform:translate(-4px)}20%{clip-path:inset(60% 0 10% 0);transform:translate(4px)}40%{clip-path:inset(40% 0 30% 0);transform:translate(-2px)}60%{clip-path:inset(80% 0 5% 0);transform:translate(3px)}80%{clip-path:inset(10% 0 70% 0);transform:translate(-3px)}100%{clip-path:inset(50% 0 30% 0);transform:translate(2px)}}
+@keyframes flicker{0%,100%{opacity:1}50%{opacity:.6}75%{opacity:.9}}
+
+/* Threat ticker */
+.threat-ticker{background:#1a0000;border-bottom:1px solid #331111;padding:6px 0;overflow:hidden;white-space:nowrap;font-family:var(--mono);font-size:10px;position:relative}
+.threat-ticker::before{content:'🔴 LIVE';position:absolute;left:8px;top:50%;transform:translateY(-50%);color:#ff0000;font-weight:bold;z-index:2;background:#1a0000;padding-right:8px;animation:blink 1s infinite}
+.ticker-track{display:inline-block;padding-left:60px;animation:tickerScroll 40s linear infinite}
+@keyframes tickerScroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+.ticker-track span{color:#ff4444;margin-right:40px}
+.ticker-track .sep{color:#331111;margin:0 16px}
+
+/* Header */
+.header{text-align:center;padding:20px 16px 12px}
+.header::before{content:'⚠ SECURITY TRAINING LAB ⚠';display:block;font-family:var(--mono);font-size:10px;color:var(--red);letter-spacing:4px;margin-bottom:12px;animation:blink 2s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.header h1{font-family:var(--mono);font-size:clamp(20px,5vw,38px);color:var(--green);text-shadow:0 0 20px rgba(0,255,136,.3);letter-spacing:2px}
+.header p{color:var(--text-dim);margin-top:6px;font-size:13px}
+
+/* Tabs */
+.tab-nav{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:12px 16px}
+.tab-btn{font-family:var(--mono);font-size:12px;padding:14px 8px;background:var(--surface);color:var(--text-dim);border:1px solid var(--border);cursor:pointer;transition:all .3s;text-align:center;min-height:52px;display:flex;align-items:center;justify-content:center;border-radius:4px}
+.tab-btn:hover,.tab-btn:active{color:var(--green);border-color:var(--green);background:rgba(0,255,136,.05)}
+.tab-btn.active{color:var(--bg);background:var(--green);border-color:var(--green);font-weight:bold}
+.tab-btn .ti{margin-right:4px;font-size:16px}
+
+/* Panels */
+.panel{display:none;max-width:900px;margin:0 auto;padding:0 14px 60px;animation:fadeIn .4s ease}
+.panel.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.ph{text-align:center;margin-bottom:24px}
+.ph h2{font-family:var(--mono);font-size:clamp(16px,3.5vw,22px);color:var(--green);margin-bottom:6px}
+.ph p{color:var(--text-dim);font-size:13px;line-height:1.7}
+
+.card{background:var(--surface);border:1px solid var(--border);padding:18px 14px;margin-bottom:16px;position:relative}
+.card::before{content:'';position:absolute;top:0;left:0;width:3px;height:100%;background:var(--green)}
+
+/* ===== 1. PASSWORD ===== */
+.pw-input{width:100%;font-family:var(--mono);font-size:18px;padding:14px 16px;background:var(--bg);border:2px solid var(--border);color:var(--green);outline:none;letter-spacing:2px;margin-bottom:14px;transition:border .3s}
+.pw-input:focus{border-color:var(--green)}
+.pw-input::placeholder{color:var(--text-dim);letter-spacing:1px;font-size:13px}
+.crack-btn{font-family:var(--mono);font-size:15px;padding:16px;background:var(--red);color:#fff;border:none;cursor:pointer;width:100%;letter-spacing:3px;text-transform:uppercase;min-height:52px;transition:all .3s}
+.crack-btn:hover,.crack-btn:active{background:#ff1a53;box-shadow:0 0 30px rgba(255,51,102,.3)}
+.crack-result{margin-top:16px;display:none}
+.crack-anim{background:#000;border:1px solid var(--border);padding:10px;font-family:var(--mono);font-size:10px;color:var(--green);height:100px;overflow:hidden;margin-bottom:12px}
+.crack-anim .line{opacity:.6;white-space:nowrap;overflow:hidden}
+.crack-anim .line.found{color:var(--red);opacity:1;font-weight:bold}
+.crack-time{font-family:var(--mono);font-size:clamp(22px,5vw,42px);text-align:center;padding:16px;margin-bottom:12px;white-space:pre-line}
+.crack-time.instant{color:var(--red)}.crack-time.fast{color:var(--orange)}.crack-time.medium{color:var(--yellow)}.crack-time.strong{color:var(--green)}
+.meter-bar{height:8px;background:var(--bg);border:1px solid var(--border);margin-bottom:8px;overflow:hidden}
+.meter-fill{height:100%;width:0;transition:width .6s,background .6s}
+.pw-tips{font-size:12px;color:var(--text-dim);line-height:1.9;max-height:none}
+.pw-tips .bad{color:var(--red)}.pw-tips .good{color:var(--green)}
+
+/* ===== 2. EXIF ===== */
+.dropzone{border:2px dashed var(--border);padding:40px 16px;text-align:center;cursor:pointer;transition:all .3s;background:var(--surface);position:relative}
+.dropzone:hover,.dropzone.dragover{border-color:var(--cyan);background:rgba(0,221,255,.05)}
+.dropzone-icon{font-size:40px;display:block;margin-bottom:8px}
+.dropzone-text{font-family:var(--mono);color:var(--text-dim);font-size:13px}
+.dropzone input[type="file"]{position:absolute;inset:0;opacity:0;cursor:pointer}
+.cam-btns{display:flex;gap:8px;margin-top:12px}
+.cam-btn,.gal-btn{flex:1;font-family:var(--mono);font-size:14px;padding:18px 10px;border:2px solid var(--cyan);background:rgba(0,221,255,.08);color:var(--cyan);cursor:pointer;text-align:center;transition:all .3s}
+.cam-btn:active,.gal-btn:active{background:rgba(0,221,255,.2)}
+.cam-btn .bi,.gal-btn .bi{display:block;font-size:28px;margin-bottom:4px}
+.exif-result{display:none}
+.exif-preview{max-width:160px;max-height:160px;object-fit:contain;border:1px solid var(--border);margin-bottom:12px}
+.exif-grid{display:grid;grid-template-columns:1fr;gap:8px;margin-bottom:16px}
+.exif-item{background:var(--bg);border:1px solid var(--border);padding:10px 12px}
+.exif-label{font-family:var(--mono);font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:2px;margin-bottom:2px}
+.exif-value{font-family:var(--mono);font-size:14px;color:var(--cyan);word-break:break-all}
+.exif-value.danger{color:var(--red)}
+.exif-map{width:100%;height:240px;border:1px solid var(--border);margin-bottom:12px}
+.exif-warn{background:rgba(255,51,102,.1);border:1px solid var(--red);padding:14px;font-size:13px;line-height:1.7;color:var(--red)}
+
+/* ===== 3. PHISHING ===== */
+.quiz-prog{font-family:var(--mono);font-size:12px;color:var(--text-dim);text-align:center;margin-bottom:14px}
+.quiz-score{font-family:var(--mono);text-align:center;margin-bottom:16px}
+.quiz-score .c{color:var(--green)}.quiz-score .w{color:var(--red)}
+.quiz-q{text-align:center;margin-bottom:20px}
+.quiz-q h3{font-size:15px;color:var(--text);margin-bottom:6px}
+.quiz-q p{font-size:13px;color:var(--text-dim)}
+.url-opts{display:flex;flex-direction:column;gap:10px;margin-bottom:16px}
+.url-opt{display:block;width:100%;text-align:left;font-family:var(--mono);font-size:12px;padding:14px 12px;background:var(--bg);border:2px solid var(--border);color:var(--cyan);cursor:pointer;transition:all .2s;word-break:break-all;min-height:50px}
+.url-opt:active:not(:disabled){border-color:var(--cyan);background:rgba(0,221,255,.05)}
+.url-opt.ok{border-color:var(--green)!important;background:rgba(0,255,136,.1)!important;color:var(--green)!important}
+.url-opt.ng{border-color:var(--red)!important;background:rgba(255,51,102,.1)!important;color:var(--red)!important}
+.quiz-exp{background:var(--surface2);border-left:3px solid var(--orange);padding:14px;margin-bottom:14px;font-size:13px;line-height:1.8;display:none}
+.quiz-next{font-family:var(--mono);font-size:14px;padding:14px 24px;background:var(--green);color:var(--bg);border:none;cursor:pointer;display:none;margin:0 auto;min-height:48px}
+.quiz-final{text-align:center;padding:24px;display:none}
+.quiz-final h3{font-family:var(--mono);font-size:24px;margin-bottom:10px}
+.quiz-final p{color:var(--text-dim);line-height:1.8;font-size:13px}
+.quiz-restart{font-family:var(--mono);padding:14px 24px;background:var(--cyan);color:var(--bg);border:none;cursor:pointer;margin-top:14px;min-height:48px}
+
+/* ===== 4. WIFI ===== */
+.wifi-sel{text-align:center;margin-bottom:16px}
+.wifi-sel select{font-family:var(--mono);font-size:14px;padding:12px 16px;background:var(--bg);border:1px solid var(--border);color:var(--cyan);outline:none;width:100%;margin-bottom:10px}
+.wifi-start{font-family:var(--mono);font-size:15px;padding:16px;background:var(--red);color:#fff;border:none;cursor:pointer;width:100%;text-transform:uppercase;letter-spacing:2px;min-height:52px}
+.pkt-stream{background:#000;border:1px solid var(--border);padding:10px;font-family:var(--mono);font-size:9px;height:280px;overflow-y:auto;margin-bottom:14px}
+.pkt-stream::-webkit-scrollbar{width:3px}.pkt-stream::-webkit-scrollbar-thumb{background:var(--border)}
+.pkt{margin-bottom:3px;padding:3px 6px;border-left:2px solid transparent;animation:pktIn .3s ease}
+@keyframes pktIn{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:translateX(0)}}
+.pkt .ts{color:var(--text-dim)}.pkt .proto{color:var(--cyan);font-weight:bold}.pkt .src{color:#888}.pkt .data{color:var(--text)}
+.pkt.danger{border-left-color:var(--red);background:rgba(255,51,102,.08)}.pkt.danger .data{color:var(--red);font-weight:bold}
+.wifi-warn{background:rgba(255,51,102,.1);border:1px solid var(--red);padding:16px;text-align:center;margin-top:12px;display:none}
+.wifi-warn h4{color:var(--red);font-family:var(--mono);margin-bottom:6px}.wifi-warn p{font-size:13px;color:var(--text-dim);line-height:1.8}
+
+/* ===== 5. RANSOMWARE OVERLAY ===== */
+.ransom-overlay{display:none;position:fixed;inset:0;z-index:10000;background:#0a0000}
+.ransom-overlay.active{display:block}
+.ransom-scroll{position:absolute;inset:0;bottom:56px;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px;background:radial-gradient(ellipse at center,#1a0000 0%,#000 70%)}
+.ransom-content{max-width:500px;margin:0 auto;text-align:center}
+.ransom-skull{font-size:40px}
+.ransom-title{font-family:'Creepster',var(--mono);font-size:clamp(20px,5vw,36px);color:#ff0000;text-shadow:0 0 20px rgba(255,0,0,.5);margin:6px 0;letter-spacing:2px;animation:flicker 2s infinite}
+.ransom-msg{font-family:var(--mono);font-size:12px;color:#ff6666;line-height:1.6;margin-bottom:8px}
+.ransom-timer{font-family:var(--mono);font-size:clamp(28px,6vw,48px);color:#ff0000;text-shadow:0 0 15px rgba(255,0,0,.5);margin:8px 0;letter-spacing:2px}
+.ransom-btc{font-family:var(--mono);font-size:11px;color:#ffaa00;background:rgba(255,170,0,.1);border:1px solid #ffaa00;padding:8px;margin-bottom:10px;word-break:break-all}
+.ransom-files{font-family:var(--mono);font-size:8px;color:#ff4444;text-align:left;max-height:60px;overflow:hidden;margin-bottom:8px;padding:4px 6px;background:rgba(255,0,0,.05);border:1px solid #330000}
+.ransom-files .rf{animation:encryptLine .3s ease}
+@keyframes encryptLine{from{opacity:0;color:#00ff88}to{opacity:1;color:#ff4444}}
+.ransom-detail-toggle{font-family:var(--mono);font-size:10px;color:#664444;text-decoration:underline;cursor:pointer;margin:6px 0;display:inline-block}
+.ransom-detail{display:none;font-family:var(--mono);font-size:9px;color:#664444;text-align:left;padding:8px;border-top:1px solid #221111;margin-top:6px}
+.ransom-fixed-btn{position:absolute;bottom:0;left:0;right:0;height:56px;display:flex;align-items:center;justify-content:center;background:#0a0000;border-top:1px solid #331111;z-index:5}
+.ransom-fixed-btn button{font-family:var(--mono);font-size:14px;padding:12px 32px;background:rgba(255,68,68,.15);border:2px solid #ff4444;color:#ff4444;cursor:pointer}
+.ransom-fixed-btn button:active{background:#ff4444;color:#000}
+@keyframes skullPulse{0%,100%{transform:scale(1);filter:drop-shadow(0 0 20px #ff0000)}50%{transform:scale(1.05);filter:drop-shadow(0 0 40px #ff0000)}}
+.ransom-title{font-family:'Creepster',var(--mono);font-size:clamp(28px,7vw,52px);color:#ff0000;text-shadow:0 0 30px rgba(255,0,0,.5);margin:16px 0;letter-spacing:4px;animation:flicker 2s infinite}
+
+/* ===== 6. DARK WEB MARKETPLACE ===== */
+.darkweb-overlay{display:none;position:fixed;inset:0;z-index:9999;background:#0a0a0a;overflow-y:auto;padding:20px;cursor:default}
+.darkweb-overlay.active{display:block}
+.dw-header{text-align:center;padding:20px 0;border-bottom:1px solid #222}
+.dw-header h2{font-family:var(--mono);color:#ff4444;font-size:clamp(18px,4vw,28px);letter-spacing:2px}
+.dw-header p{color:#666;font-size:12px;font-family:var(--mono);margin-top:6px}
+.dw-onion{font-family:var(--mono);font-size:10px;color:#444;text-align:center;margin:8px 0;word-break:break-all}
+.dw-listings{max-width:600px;margin:20px auto}
+.dw-item{background:#111;border:1px solid #222;padding:16px;margin-bottom:12px;position:relative}
+.dw-item::after{content:'IN STOCK';position:absolute;top:12px;right:12px;font-family:var(--mono);font-size:9px;color:#00ff88;background:rgba(0,255,136,.1);padding:2px 8px;border:1px solid #00ff88}
+.dw-item-title{font-family:var(--mono);font-size:14px;color:#ff6666;margin-bottom:6px}
+.dw-item-detail{font-family:var(--mono);font-size:11px;color:#888;line-height:1.8;margin-bottom:8px}
+.dw-item-detail .leaked{color:#ff4444;font-weight:bold}
+.dw-price{font-family:var(--mono);font-size:18px;color:#ffaa00}
+.dw-price .btc{font-size:11px;color:#666;margin-left:6px}
+.dw-seller{font-family:var(--mono);font-size:10px;color:#444;margin-top:6px}
+.dw-seller .stars{color:#ffaa00}
+.dw-dismiss{display:block;margin:20px auto;font-family:var(--mono);font-size:14px;padding:14px 32px;background:transparent;border:2px solid #ff4444;color:#ff4444;cursor:pointer}
+.overlay-close-sticky{position:sticky;top:0;z-index:10;text-align:right;padding:0 0 8px 0}
+.overlay-close-sticky button{font-family:var(--mono);font-size:12px;padding:8px 16px;background:rgba(255,68,68,.15);border:1px solid #ff4444;color:#ff4444;cursor:pointer}
+.overlay-close-sticky button:active{background:#ff4444;color:#000}
+
+/* ===== 7. SUMMARY PANEL ===== */
+.summary-overlay{display:none;position:fixed;inset:0;z-index:9998;background:rgba(0,0,0,.95);overflow-y:auto;padding:20px}
+.summary-overlay.active{display:block}
+.summary-content{max-width:600px;margin:0 auto}
+.summary-header{text-align:center;padding:20px 0;margin-bottom:20px}
+.summary-header h2{font-family:var(--mono);font-size:clamp(18px,4vw,26px);color:var(--red);margin-bottom:8px}
+.summary-header p{color:var(--text-dim);font-size:13px}
+.summary-card{background:var(--surface);border:1px solid var(--border);padding:16px;margin-bottom:12px}
+.summary-card h4{font-family:var(--mono);font-size:13px;color:var(--red);margin-bottom:8px}
+.summary-card p{font-size:13px;color:var(--text);line-height:1.8}
+.summary-card .attack{color:var(--orange);font-weight:bold;display:block;margin-top:6px}
+.summary-verdict{text-align:center;padding:24px;background:rgba(255,51,102,.08);border:1px solid var(--red);margin:20px 0}
+.summary-verdict h3{font-family:var(--mono);font-size:20px;color:var(--red);margin-bottom:8px}
+.summary-verdict p{font-size:13px;color:var(--text-dim);line-height:1.8}
+.summary-dismiss{display:block;margin:20px auto;font-family:var(--mono);font-size:14px;padding:14px 32px;background:var(--green);color:var(--bg);border:none;cursor:pointer;min-height:48px}
+
+/* ===== APT NATION STATE ===== */
+.apt-map{position:relative;background:#080c14;border:1px solid var(--border);height:320px;margin-bottom:16px;overflow:hidden}
+.apt-map canvas{width:100%;height:100%}
+.apt-log{background:#000;border:1px solid var(--border);padding:10px;font-family:var(--mono);font-size:9px;height:200px;overflow-y:auto;margin-bottom:14px}
+.apt-log::-webkit-scrollbar{width:3px}.apt-log::-webkit-scrollbar-thumb{background:var(--border)}
+.apt-entry{margin-bottom:4px;padding:3px 6px;border-left:2px solid transparent;animation:pktIn .3s ease}
+.apt-entry.cn{border-left-color:#ff4444;color:#ff6666}
+.apt-entry.nk{border-left-color:#ffaa00;color:#ffcc44}
+.apt-entry.ru{border-left-color:#8844ff;color:#aa66ff}
+.apt-entry .tag{font-weight:bold;padding:1px 4px;font-size:8px;margin-right:4px}
+.apt-entry .tag.cn{background:rgba(255,0,0,.2);color:#ff4444}
+.apt-entry .tag.nk{background:rgba(255,170,0,.2);color:#ffaa00}
+.apt-entry .tag.ru{background:rgba(136,68,255,.2);color:#8844ff}
+.apt-cards{display:grid;grid-template-columns:1fr;gap:10px;margin-bottom:16px}
+.apt-card{background:var(--surface);border:1px solid var(--border);padding:14px;position:relative}
+.apt-card::before{content:'';position:absolute;top:0;left:0;width:100%;height:3px}
+.apt-card.cn::before{background:#ff4444}
+.apt-card.nk::before{background:#ffaa00}
+.apt-card.ru::before{background:#8844ff}
+.apt-card h4{font-family:var(--mono);font-size:13px;margin-bottom:6px}
+.apt-card.cn h4{color:#ff4444}.apt-card.nk h4{color:#ffaa00}.apt-card.ru h4{color:#8844ff}
+.apt-card p{font-size:12px;color:var(--text-dim);line-height:1.7}
+.apt-card .target{color:var(--red);font-weight:bold}
+.apt-start{font-family:var(--mono);font-size:15px;padding:16px;background:var(--red);color:#fff;border:none;cursor:pointer;width:100%;text-transform:uppercase;letter-spacing:2px;min-height:52px;margin-bottom:16px}
+.apt-legend{display:flex;gap:16px;justify-content:center;margin-bottom:12px;font-family:var(--mono);font-size:11px}
+.apt-legend span::before{content:'●';margin-right:4px}
+.apt-legend .cn{color:#ff4444}.apt-legend .nk{color:#ffaa00}.apt-legend .ru{color:#8844ff}
+@keyframes missileTrail{0%{opacity:1;stroke-dashoffset:100}100%{opacity:0;stroke-dashoffset:0}}
+
+/* ===== SHADOW IT ===== */
+.shadow-checklist{display:flex;flex-direction:column;gap:8px;margin-bottom:16px}
+.shadow-item{background:var(--bg);border:1px solid var(--border);padding:14px 16px;cursor:pointer;transition:all .3s;display:flex;align-items:flex-start;gap:10px;user-select:none}
+.shadow-item:active{background:rgba(255,51,102,.05)}
+.shadow-item.checked{border-color:var(--red);background:rgba(255,51,102,.08)}
+.shadow-item.checked .si-box{background:var(--red);border-color:var(--red)}
+.shadow-item.checked .si-box::after{content:'✓';color:#fff;font-size:12px}
+.si-box{width:22px;height:22px;min-width:22px;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;transition:all .3s;margin-top:1px}
+.si-text{font-size:13px;line-height:1.6}
+.si-text .risk{display:block;font-family:var(--mono);font-size:10px;color:var(--red);margin-top:2px}
+.shadow-result{display:none;text-align:center;padding:20px}
+.shadow-level{font-family:var(--mono);font-size:clamp(24px,5vw,36px);margin-bottom:12px}
+.shadow-detail{font-size:13px;color:var(--text-dim);line-height:2;text-align:left}
+.shadow-detail .leak{color:var(--red);font-weight:bold}
+.shadow-btn{font-family:var(--mono);font-size:15px;padding:16px;background:var(--red);color:#fff;border:none;cursor:pointer;width:100%;min-height:52px;margin-top:12px}
+
+/* ===== PIX REVOLUTION ===== */
+.phone-frame{max-width:320px;margin:0 auto 16px;background:#000;border:3px solid #333;border-radius:24px;padding:8px;position:relative;overflow:hidden}
+.phone-screen{background:#fff;border-radius:16px;min-height:400px;position:relative;overflow:hidden}
+.phone-statusbar{background:#1a1a2e;color:#fff;font-family:var(--mono);font-size:10px;padding:6px 12px;display:flex;justify-content:space-between}
+.pix-step{display:none;padding:16px;animation:fadeIn .4s ease}
+.pix-step.active{display:block}
+.pix-app-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;padding:20px}
+.pix-app{text-align:center;cursor:pointer;transition:transform .2s}
+.pix-app:active{transform:scale(.9)}
+.pix-app-icon{width:50px;height:50px;border-radius:12px;margin:0 auto 4px;display:flex;align-items:center;justify-content:center;font-size:24px}
+.pix-app-name{font-size:10px;color:#333}
+.pix-permission{background:#f5f5f5;border-radius:12px;padding:16px;margin:12px;text-align:center}
+.pix-permission h4{font-size:14px;color:#333;margin-bottom:8px}
+.pix-permission p{font-size:12px;color:#666;line-height:1.6;margin-bottom:12px}
+.pix-allow{background:#4CAF50;color:#fff;border:none;padding:10px 24px;border-radius:20px;font-size:13px;cursor:pointer;margin:4px}
+.pix-deny{background:#eee;color:#666;border:none;padding:10px 24px;border-radius:20px;font-size:13px;cursor:pointer;margin:4px}
+.pix-overlay-screen{position:absolute;inset:0;background:rgba(0,0,0,.9);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:5;animation:fadeIn .3s}
+.pix-overlay-screen .spinner{width:30px;height:30px;border:3px solid #333;border-top-color:#4CAF50;border-radius:50%;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.pix-overlay-screen p{color:#aaa;font-size:13px;margin-top:12px}
+.pix-hack-reveal{position:absolute;inset:0;background:#000;z-index:10;padding:12px;font-family:var(--mono);font-size:10px;color:var(--green);overflow-y:auto;display:none}
+.pix-hack-reveal.active{display:block}
+.pix-hack-reveal .hl{color:var(--red);font-weight:bold}
+.pix-control{text-align:center;margin-top:12px}
+.pix-next{font-family:var(--mono);font-size:14px;padding:12px 24px;background:var(--cyan);color:var(--bg);border:none;cursor:pointer;min-height:44px}
+.pix-warn{background:rgba(255,51,102,.1);border:1px solid var(--red);padding:14px;font-size:13px;line-height:1.8;color:var(--red);margin-top:16px}
+
+/* Desktop */
+@media(min-width:601px){
+  .tab-nav{display:flex;justify-content:center;gap:4px;grid-template-columns:none;flex-wrap:wrap}
+  .tab-btn{padding:10px 14px;font-size:12px;min-height:auto;border-radius:0}
+  .exif-grid{grid-template-columns:1fr 1fr}
+  .cam-btns .mobile-only{display:none}
+  .apt-cards{grid-template-columns:1fr 1fr 1fr}
+}
+@media(max-width:600px){
+  .dropzone{display:none}
+  .tab-nav{grid-template-columns:repeat(4,1fr)}
+  .tab-btn{font-size:9px;padding:8px 3px;min-height:46px}
+  .tab-btn .ti{display:block;font-size:18px;margin:0 0 2px 0}
+  .phone-frame{max-width:280px}
+  .phone-screen{min-height:350px}
+}
+</style>
+</head>
+<body>
+
+<div class="threat-ticker">
+  <div class="ticker-track">
+    <span>🚨 03/23 職員のSNS投稿で複数病院が謝罪 — 電子カルテ画面がInstagramに流出</span><span class="sep">|</span>
+    <span>🚨 03/21 「The Gentlemen」がメディカ出版・海外医療機器企業を同時攻撃 — 医療セクター明確標的</span><span class="sep">|</span>
+    <span>⚠ 03/22 国内中堅病院（西日本）外来停止 — VPN経由ランサムウェア</span><span class="sep">|</span>
+    <span>⚠ 03/19 精密機器メーカー Hunters Int.リークサイト掲載</span><span class="sep">|</span>
+    <span>⚠ 03/15 調剤薬局チェーン 処方箋データ不正アクセス</span><span class="sep">|</span>
+    <span>⚠ 国家関与が疑われるAPT: 4月新年度の組織改編を狙った認証情報窃取が活発化</span><span class="sep">|</span>
+    <span>⚠ 保守業者リモートアクセス用アカウント奪取→院内横展開が最多の侵入経路</span><span class="sep">|</span>
+    <span>⚠ ScreenConnect脆弱性を悪用した医療機関への侵入を複数確認</span><span class="sep">|</span>
+    <span>⚠ Ivanti/Fortinet未更新VPNへの国家関与が疑われるAPTスキャン活発化</span><span class="sep">|</span>
+    <span>🚨 03/23 職員のSNS投稿で複数病院が謝罪 — 電子カルテ画面がInstagramに流出</span><span class="sep">|</span>
+    <span>🚨 03/21 「The Gentlemen」がメディカ出版・海外医療機器企業を同時攻撃 — 医療セクター明確標的</span><span class="sep">|</span>
+    <span>⚠ 03/22 国内中堅病院（西日本）外来停止 — VPN経由ランサムウェア</span><span class="sep">|</span>
+    <span>⚠ 03/19 精密機器メーカー Hunters Int.リークサイト掲載</span><span class="sep">|</span>
+    <span>⚠ 03/15 調剤薬局チェーン 処方箋データ不正アクセス</span><span class="sep">|</span>
+    <span>⚠ 国家関与が疑われるAPT: 4月新年度の組織改編を狙った認証情報窃取が活発化</span><span class="sep">|</span>
+    <span>⚠ 保守業者リモートアクセス用アカウント奪取→院内横展開が最多の侵入経路</span>
+  </div>
+</div>
+
+<div class="header">
+  <p style="font-family:var(--mono);font-size:13px;color:var(--green);margin-bottom:4px;letter-spacing:1px;text-shadow:0 0 20px rgba(0,255,136,.3)">日本医科大学千葉北総病院</p>
+  <h1>CYBER SECURITY LAB</h1>
+  <p>あなたの情報は、こんなに簡単に盗まれます</p>
+</div>
+
+<nav class="tab-nav">
+  <button class="tab-btn active" onclick="showTab('pw')"><span class="ti">🔓</span>パスワード解析</button>
+  <button class="tab-btn" onclick="showTab('exif')"><span class="ti">📸</span>写真EXIF暴露</button>
+  <button class="tab-btn" onclick="showTab('phish')"><span class="ti">🎣</span>フィッシング</button>
+  <button class="tab-btn" onclick="showTab('wifi')"><span class="ti">📡</span>Wi-Fi盗聴</button>
+  <button class="tab-btn" onclick="showTab('apt')"><span class="ti">🌐</span>APT攻撃</button>
+  <button class="tab-btn" onclick="showTab('shadow')"><span class="ti">👻</span>シャドーIT</button>
+  <button class="tab-btn" onclick="showTab('pix')"><span class="ti">📱</span>スマホ乗取</button>
+</nav>
+
+<!-- 1. PASSWORD -->
+<div id="p-pw" class="panel active">
+  <div class="ph"><h2>// PASSWORD CRACK SIMULATOR</h2><p>RTX 4090 x8 GPUクラスタの解析速度でパスワードを攻撃<br>NIST SP 800-63B / OWASP / PCI DSS v4.0 / NISC基準で判定<br><span style="color:var(--text-dim);font-size:11px">※ 研修用の概算値です。外部送信なし・ブラウザ内処理のみ</span></p></div>
+  <div class="card">
+    <input type="text" class="pw-input" id="pwInput" placeholder="パスワードを入力..." autocomplete="off">
+    <button class="crack-btn" onclick="crackPW()">▶ 解析開始</button>
+    <div class="crack-result" id="crackResult">
+      <div class="crack-anim" id="crackAnim"></div>
+      <div class="crack-time" id="crackTime"></div>
+      <div class="meter-bar"><div class="meter-fill" id="meter"></div></div>
+      <div class="pw-tips" id="pwTips"></div>
+    </div>
+  </div>
+</div>
+
+<!-- 2. EXIF -->
+<div id="p-exif" class="panel">
+  <div class="ph"><h2>// PHOTO EXIF EXPOSURE</h2><p>スマホ写真に隠された個人情報を暴きます<br>📷 撮影 or 選択して確認してください</p></div>
+  <div class="card">
+    <div class="dropzone" id="dropzone">
+      <span class="dropzone-icon">📁</span>
+      <div class="dropzone-text">写真をドラッグ＆ドロップ or クリック</div>
+      <input type="file" accept="image/*" id="fileInput" onchange="handleFile(this.files[0])">
+    </div>
+    <div class="cam-btns">
+      <button class="cam-btn" onclick="document.getElementById('camIn').click()"><span class="bi">📷</span>今すぐ撮影<input type="file" accept="image/*" capture="environment" id="camIn" style="display:none" onchange="handleFile(this.files[0])"></button>
+      <button class="gal-btn" onclick="document.getElementById('galIn').click()"><span class="bi">🖼️</span>ライブラリ選択<input type="file" accept="image/*" id="galIn" style="display:none" onchange="handleFile(this.files[0])"></button>
+    </div>
+    <div class="exif-result" id="exifResult">
+      <img id="exifPreview" class="exif-preview" style="display:none">
+      <div class="exif-grid" id="exifGrid"></div>
+      <div id="mapBox" style="display:none"><iframe id="exifMap" class="exif-map" style="border:0"></iframe></div>
+      <div class="exif-warn" id="exifWarn"></div>
+    </div>
+  </div>
+</div>
+
+<!-- 3. PHISHING -->
+<div id="p-phish" class="panel">
+  <div class="ph"><h2>// PHISHING URL TRAINING</h2><p>URLの見分け方を学びながら体験<br>まず「見分けるコツ」を読んでから挑戦してください</p></div>
+  <div class="card">
+    <div class="quiz-prog" id="qProg"></div>
+    <div class="quiz-score" id="qScore"></div>
+    <div id="qArea">
+      <div id="qLesson" style="background:rgba(0,221,255,.06);border:1px solid rgba(0,221,255,.2);padding:12px;margin-bottom:14px;display:none">
+        <div style="font-family:var(--mono);font-size:11px;color:var(--cyan);margin-bottom:4px" id="qLessonTitle"></div>
+        <div style="font-size:12px;color:var(--text);line-height:1.8" id="qLessonBody"></div>
+      </div>
+      <div class="quiz-q" id="qQ"></div>
+      <div id="qHighlight" style="font-family:var(--mono);font-size:10px;color:var(--text-dim);text-align:center;margin-bottom:10px;display:none"></div>
+      <div class="url-opts" id="qOpts"></div>
+      <div class="quiz-exp" id="qExp"></div>
+      <button class="quiz-next" id="qNext" onclick="nextQ()">次の問題 →</button>
+    </div>
+    <div class="quiz-final" id="qFinal">
+      <h3 id="fScore"></h3>
+      <p id="fMsg"></p>
+      <button class="quiz-restart" onclick="startQuiz()">もう一度チャレンジ</button>
+    </div>
+  </div>
+</div>
+
+<!-- 4. WIFI -->
+<div id="p-wifi" class="panel">
+  <div class="ph"><h2>// WiFi PACKET CAPTURE</h2><p>暗号化なしWi-Fiで、あなたの通信はこう見えている</p></div>
+  <div class="card">
+    <div class="wifi-sel">
+      <select id="wifiSel">
+        <option value="cafe">☕ カフェのフリーWi-Fi</option>
+        <option value="hospital">🏥 院内の未暗号化Wi-Fi</option>
+        <option value="hotel">🏨 ホテルのロビーWi-Fi</option>
+      </select>
+      <button class="wifi-start" onclick="startCapture()">▶ 盗聴開始</button>
+    </div>
+    <div class="pkt-stream" id="pktStream"></div>
+    <div class="wifi-warn" id="wifiWarn"><h4>⚠ これが攻撃者に見えている画面です</h4><p id="wifiMsg"></p></div>
+  </div>
+</div>
+
+<!-- 5. APT NATION STATE -->
+<div id="p-apt" class="panel">
+  <div class="ph"><h2>// APT ATTACK MAP — 国家関与が疑われる攻撃</h2><p>特定の国家の関与が疑われるハッカー集団をはじめ、<br>さまざまな脅威アクターが日本の医療機関を狙っています</p></div>
+
+  <div class="card" style="border-left:3px solid var(--red)">
+    <div class="apt-legend">
+      <span class="cn">APT41 (中国の関与が疑われる)</span>
+      <span class="nk">Lazarus (北朝鮮の関与が疑われる)</span>
+      <span class="ru">LockBit系 (ロシアの関与が疑われる)</span>
+    </div>
+    <div class="apt-map"><canvas id="aptCanvas"></canvas></div>
+    <button class="apt-start" onclick="startAPT()">▶ 攻撃シミュレーション開始</button>
+    <div class="apt-log" id="aptLog"></div>
+  </div>
+
+  <div class="apt-cards">
+    <div class="apt-card cn">
+      <h4>🔴 APT41 / Volt Typhoon（中国の関与が疑われる）</h4>
+      <p>
+        <strong>目的：</strong>長期潜伏・知財窃取・攻撃インフラ構築<br>
+        <strong>手法：</strong>医療系SaaS・APIの脆弱性を突いた偵察型侵入<br>
+        <span class="target">⚠ 4月新年度の組織改編を狙い、新任管理者の不慣れ・引継ぎ漏れにつけ込む認証情報窃取が活発化中</span><br>
+        <strong>特徴：</strong>侵入後は数ヶ月〜数年潜伏。気づいた時にはデータが抜かれた後<br>
+        <span style="font-size:11px;color:var(--text-dim)">※ 他の国家の関与が疑われるグループも同様の手法を用いる場合があります</span>
+      </p>
+    </div>
+    <div class="apt-card nk">
+      <h4>🟡 Lazarus / Andariel（北朝鮮の関与が疑われる）</h4>
+      <p>
+        <strong>目的：</strong>外貨獲得が疑われる<br>
+        <strong>手法：</strong>医療研究機関の技術情報窃取＋中規模病院への仮想通貨身代金要求<br>
+        <span class="target">⚠ 脆弱なPCを起点に提携銀行・暗号資産へのアクセスを試行。身代金交渉も高度化</span><br>
+        <strong>特徴：</strong>300人規模の病院が最も狙われやすい（セキュリティ投資が薄い）
+      </p>
+    </div>
+    <div class="apt-card ru">
+      <h4>🟣 LockBit派生 / RaaS連合（ロシアの関与が疑われる）</h4>
+      <p>
+        <strong>目的：</strong>短期的な金銭奪取<br>
+        <strong>手法：</strong>RaaS（Ransomware as a Service）モデルで攻撃を自動化・大量展開<br>
+        <span class="target">⚠ 医療機関を「人道的配慮なし」のターゲットとして継続。人命を盾にした身代金交渉</span><br>
+        <strong>特徴：</strong>The Gentlemen等がBYOVDでセキュリティソフトを無効化してから展開<br>
+        <span style="font-size:11px;color:var(--text-dim)">※ 国家の直接関与か民間犯罪集団かの境界は曖昧であり、複数の国にまたがる場合もあります</span>
+      </p>
+    </div>
+  </div>
+
+  <div class="card" style="border-left:3px solid var(--orange);background:rgba(255,136,0,.05)">
+    <h4 style="font-family:var(--mono);color:var(--orange);margin-bottom:8px">⚠ なぜ病院が狙われるのか？</h4>
+    <p style="font-size:13px;line-height:2;color:var(--text)">
+      <strong style="color:var(--red)">① 人命を盾にできる</strong> — システム停止＝診療停止。身代金を払わざるを得ない圧力<br>
+      <strong style="color:var(--red)">② 保守VPNが「最弱の鎖」</strong> — ベンダー任せの管理外VPNが院内全体への侵入口<br>
+      <strong style="color:var(--red)">③ セキュリティ投資が薄い</strong> — 国立大学の3分の1以下の予算で同等の防御を求められる<br>
+      <strong style="color:var(--red)">④ 個人情報の価値が高い</strong> — 医療情報はクレカ情報の10〜20倍の闇市場価格
+    </p>
+  </div>
+</div>
+
+<!-- 6. SHADOW IT -->
+<div id="p-shadow" class="panel">
+  <div class="ph"><h2>// SHADOW IT DIAGNOSIS</h2><p>組織が把握していないデバイスやサービスの利用。<br>あなたの日常行動をチェックしてください</p></div>
+
+  <div class="card">
+    <div class="shadow-checklist" id="shadowList">
+      <div class="shadow-item" onclick="toggleShadow(this)" data-risk="high" data-leak="個人クラウド上の患者データ・業務ファイル">
+        <div class="si-box"></div>
+        <div class="si-text">個人のGoogleドライブやiCloudに業務データを保存したことがある<span class="risk">→ 公開設定の不備で外部流出するリスク</span></div>
+      </div>
+      <div class="shadow-item" onclick="toggleShadow(this)" data-risk="critical" data-leak="電子カルテ画面の写真（患者名・ID・処方内容含む）">
+        <div class="si-box"></div>
+        <div class="si-text">私物スマホで電子カルテや業務画面を撮影したことがある<span class="risk">→ 写真が自動でクラウドにバックアップされ漏洩</span></div>
+      </div>
+      <div class="shadow-item" onclick="toggleShadow(this)" data-risk="high" data-leak="患者情報を含むチャット履歴">
+        <div class="si-box"></div>
+        <div class="si-text">個人のLINEやメールで業務連絡・患者情報をやりとりしたことがある<span class="risk">→ アカウント乗っ取りで全履歴が流出</span></div>
+      </div>
+      <div class="shadow-item" onclick="toggleShadow(this)" data-risk="critical" data-leak="USBメモリ内の患者リスト・研究データ">
+        <div class="si-box"></div>
+        <div class="si-text">私物USBメモリで患者データや業務ファイルを持ち出したことがある<span class="risk">→ 紛失・盗難で全データが流出</span></div>
+      </div>
+      <div class="shadow-item" onclick="toggleShadow(this)" data-risk="medium" data-leak="無許可アプリ内に保存された認証情報">
+        <div class="si-box"></div>
+        <div class="si-text">IT部門の許可なくアプリやクラウドサービスを業務で使ったことがある<span class="risk">→ セキュリティ審査なしのサービスから情報流出</span></div>
+      </div>
+      <div class="shadow-item" onclick="toggleShadow(this)" data-risk="medium" data-leak="院内Wi-Fi認証情報・業務システムのID">
+        <div class="si-box"></div>
+        <div class="si-text">院内Wi-Fiのパスワードを退職者や外部の人に教えたことがある<span class="risk">→ 退職後も院内ネットワークにアクセス可能</span></div>
+      </div>
+      <div class="shadow-item" onclick="toggleShadow(this)" data-risk="high" data-leak="個人端末経由の院内ネットワーク侵入経路">
+        <div class="si-box"></div>
+        <div class="si-text">私物スマホやPCを院内ネットワークに接続したことがある<span class="risk">→ マルウェア感染端末が院内に侵入する踏み台に</span></div>
+      </div>
+      <div class="shadow-item" onclick="toggleShadow(this)" data-risk="high" data-leak="ChatGPT等に入力された患者情報・業務機密">
+        <div class="si-box"></div>
+        <div class="si-text">ChatGPT等の生成AIに患者情報や業務内容を入力したことがある<span class="risk">→ 入力データが学習に使用され外部に残留するリスク</span></div>
+      </div>
+      <div class="shadow-item" onclick="toggleShadow(this)" data-risk="critical" data-leak="SNS投稿された電子カルテ画面・院内写真（患者名・処方内容が写り込み）">
+        <div class="si-box"></div>
+        <div class="si-text">院内で撮った写真や電子カルテ画面をSNS（Instagram・TikTok等）に投稿したことがある<span class="risk">→ 2026年3月、実際に複数の病院が職員のSNS投稿で謝罪に追い込まれた</span></div>
+      </div>
+      <div class="shadow-item" onclick="toggleShadow(this)" data-risk="critical" data-leak="SNS動画内の患者情報・院内機密情報（背景に写り込んだ電子カルテ・患者・業務内容）">
+        <div class="si-box"></div>
+        <div class="si-text">勤務中・院内での自撮りや動画をSNSに投稿したことがある（背景に患者・カルテ・業務情報が写り込み）<span class="risk">→ 本人に悪意がなくても、背景から患者情報が特定され病院全体の信用が失墜する</span></div>
+      </div>
+    </div>
+    <button class="shadow-btn" onclick="diagnoseShadow()">▶ シャドーIT診断を実行</button>
+    <div class="shadow-result" id="shadowResult">
+      <div class="shadow-level" id="shadowLevel"></div>
+      <div class="shadow-detail" id="shadowDetail"></div>
+    </div>
+  </div>
+</div>
+
+<!-- 7. PIX REVOLUTION -->
+<div id="p-pix" class="panel">
+  <div class="ph"><h2>// SMARTPHONE HIJACK DEMO</h2><p>偽アプリがあなたのスマホを乗っ取る手口を体験<br>PixRevolution型「オペレーター介入トロイの木馬」の再現</p></div>
+
+  <div class="card">
+    <div class="phone-frame">
+      <div class="phone-screen" id="pixScreen">
+        <div class="phone-statusbar"><span>9:41</span><span>📶 🔋 87%</span></div>
+
+        <!-- Step 1: App store -->
+        <div class="pix-step active" id="pixStep1">
+          <div style="text-align:center;padding:8px;color:#333;font-size:13px;font-weight:bold">Google Play ストア</div>
+          <div style="text-align:center;color:#999;font-size:10px;margin-bottom:8px">— 送金乗っ取り型 —</div>
+          <div class="pix-app-grid">
+            <div class="pix-app" onclick="pixNext(2)">
+              <div class="pix-app-icon" style="background:#e3f2fd">📦</div>
+              <div class="pix-app-name">日本郵便<br><span style="color:red;font-size:8px">⚠ 偽アプリ</span></div>
+            </div>
+            <div class="pix-app" onclick="pixNext(2)">
+              <div class="pix-app-icon" style="background:#fff3e0">🏨</div>
+              <div class="pix-app-name">Expedia<br><span style="color:red;font-size:8px">⚠ 偽アプリ</span></div>
+            </div>
+            <div class="pix-app" onclick="pixNext(2)">
+              <div class="pix-app-icon" style="background:#e8f5e9">🛡</div>
+              <div class="pix-app-name">AVG Antivirus<br><span style="color:red;font-size:8px">⚠ 偽アプリ</span></div>
+            </div>
+          </div>
+          <div style="text-align:center;color:#999;font-size:10px;margin:8px 0">— 生体情報窃取型 —</div>
+          <div class="pix-app-grid">
+            <div class="pix-app" onclick="pixNext(2)">
+              <div class="pix-app-icon" style="background:#000;color:#fff;font-size:20px">♪</div>
+              <div class="pix-app-name">TikTok検証<br><span style="color:red;font-size:8px">⚠ 偽サイト</span></div>
+            </div>
+            <div class="pix-app" onclick="pixNext(2)">
+              <div class="pix-app-icon" style="background:linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);color:#fff;font-size:16px">📷</div>
+              <div class="pix-app-name">Instagram凍結解除<br><span style="color:red;font-size:8px">⚠ 偽サイト</span></div>
+            </div>
+            <div class="pix-app" onclick="pixNext(2)">
+              <div class="pix-app-icon" style="background:#4285f4;color:#fff;font-size:16px">G</div>
+              <div class="pix-app-name">Chromeセキュリティ<br><span style="color:red;font-size:8px">⚠ 偽アプリ</span></div>
+            </div>
+          </div>
+          <div style="text-align:center;color:#999;font-size:11px;padding:8px">↑ どれかをタップしてインストール体験</div>
+        </div>
+
+        <!-- Step 2: Permission -->
+        <div class="pix-step" id="pixStep2">
+          <div class="pix-permission">
+            <h4>📦 日本郵便 追跡アプリ</h4>
+            <p>サービス向上のため、以下の権限を許可してください。<br><span style="color:#999;font-size:10px">（個人情報は収集しません）</span></p>
+            <div style="text-align:left;font-size:11px;color:#666;padding:8px;background:#f9f9f9;border-radius:8px;margin-bottom:12px">
+              ☑ アクセシビリティ（画面読み上げ機能）<br>
+              ☑ カメラ（本人確認のため）<br>
+              ☑ マイク（音声案内のため）<br>
+              ☑ 他アプリの上に表示
+            </div>
+            <button class="pix-allow" onclick="pixNext(3)">すべて許可</button>
+            <button class="pix-deny" onclick="pixDeny()">拒否</button>
+          </div>
+          <div style="padding:12px;text-align:center;color:#cc0000;font-size:11px">
+            ⚠ これらの権限で端末の全操作制御＋無断撮影・録音が可能になります
+          </div>
+        </div>
+
+        <!-- Step 3: Banking app -->
+        <div class="pix-step" id="pixStep3">
+          <div style="background:#1a237e;color:#fff;padding:12px;text-align:center;font-size:14px">🏦 ○○銀行 オンラインバンキング</div>
+          <div style="padding:16px">
+            <div style="font-size:12px;color:#333;margin-bottom:8px">振込先: 田中太郎</div>
+            <div style="font-size:12px;color:#333;margin-bottom:8px">口座番号: 1234567</div>
+            <div style="font-size:20px;color:#333;font-weight:bold;text-align:center;padding:12px">¥55,000</div>
+            <button style="width:100%;background:#1a237e;color:#fff;border:none;padding:12px;font-size:14px;border-radius:8px;cursor:pointer" onclick="pixNext(4)">送金を実行</button>
+          </div>
+        </div>
+
+        <!-- Step 4: Fake loading overlay (hijack happening) -->
+        <div class="pix-step" id="pixStep4">
+          <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:300px;background:#000">
+            <div class="spinner"></div>
+            <p style="color:#aaa;font-size:13px;margin-top:16px">少々お待ちください...</p>
+            <p style="color:#666;font-size:10px;margin-top:8px">処理中です</p>
+          </div>
+        </div>
+
+        <!-- Step 5: Reveal -->
+        <div class="pix-step" id="pixStep5">
+          <div style="background:#000;padding:12px;font-family:var(--mono);font-size:10px;color:var(--green);min-height:300px" id="pixReveal">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="pix-control" id="pixControl" style="display:none">
+      <button class="pix-next" onclick="pixRestart()">🔄 もう一度体験</button>
+    </div>
+
+    <div class="pix-warn" id="pixWarn" style="display:none"></div>
+
+    <div class="card" style="margin-top:16px;border-left-color:var(--orange)">
+      <h4 style="font-family:var(--mono);color:var(--orange);font-size:13px;margin-bottom:8px">⚠ この手口は日本の医療現場でも起きる</h4>
+      <p style="font-size:12px;color:var(--text-dim);line-height:1.8">
+        <strong style="color:var(--red)">私物スマホで院内システムを操作</strong>していませんか？<br>
+        偽アプリがインストールされたスマホから、オンラインバンキング・電子決済・院内ポータルのセッションが奪われます。<br>
+        「アクセシビリティ権限」を要求するアプリは<strong>すべて疑ってください</strong>。<br><br>
+        <strong style="color:var(--cyan)">💡 対策：</strong>業務には病院支給端末のみ使用。私物端末への業務アプリ導入を禁止。不要なアプリの権限を定期見直し。
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- ===== RANSOMWARE OVERLAY ===== -->
+<div class="ransom-overlay" id="ransomOverlay">
+  <div class="ransom-scroll">
+    <div class="ransom-content">
+      <div class="ransom-skull">💀</div>
+      <div class="ransom-title">FILES ENCRYPTED</div>
+      <div class="ransom-msg">
+        電子カルテ・PACS・医事会計が<strong style="color:#ff0000">暗号化</strong>されました
+      </div>
+      <div class="ransom-timer" id="ransomTimer">71:59:58</div>
+      <div class="ransom-btc">
+        💰 要求額: <strong>152億円 (≈ 1,000 BTC)</strong>
+      </div>
+      <div style="font-family:var(--mono);font-size:10px;color:#ff8800;text-align:left;border:1px solid #443300;padding:8px;margin-bottom:8px;background:rgba(255,136,0,.06)">
+        <strong style="color:#ffaa00">🚨 初動対応：</strong><br>
+        <span style="color:#ffcc66">端末の異常を確認</span> — 暗号化画面・ログイン不可・不審な再起動<br>
+        <span style="color:#ffcc66">ネットワークを遮断</span> — LANケーブルを抜く・Wi-Fi/Bluetoothオフ ※拡大防止最優先<br>
+        <span style="color:#ffcc66">電源は切らない</span> — シャットダウン・再起動禁止 ※証跡保全のため<br>
+        <span style="color:#ffcc66">自己判断操作禁止</span> — ウイルススキャン・ファイル削除禁止 ※証跡破壊につながる<br>
+        <span style="color:#ffcc66">医療情報室へ連絡</span><br>
+        <span style="color:#ffcc66">上司に報告</span><br>
+        <span style="color:#ffcc66">周囲へ共有・拡散防止</span> — 近隣PCのLAN抜線を支援・使用停止の貼り紙を掲示<br>
+        <span style="color:#ffcc66">端末に触れない</span> — 調査・復旧はIT-BCP対策本部/CSIRTが担当
+      </div>
+      <div class="ransom-files" id="ransomFiles"></div>
+      <span class="ransom-detail-toggle" onclick="var d=document.getElementById('ransomDetail');d.style.display=d.style.display==='block'?'none':'block'">▼ 攻撃の詳細</span>
+      <div class="ransom-detail" id="ransomDetail">
+        <strong style="color:#ff6666">[ NetRunner v3.1 ]</strong><br>
+        侵入: 保守業者アカウント奪取 → 横展開<br>
+        ①ScreenConnect CVE-2024-1709<br>
+        ②BYOVD Apex One/Defender無効化<br>
+        二重恐喝: リークサイトに患者情報公開<br>
+        <span style="color:#ff8800">3/21 The Gentlemen メディカ出版攻撃</span><br><br>
+        <strong>📊 直近被害:</strong><br>
+        03/22 西日本病院外来停止<br>
+        03/21 メディカ出版<br>
+        03/15 調剤薬局チェーン<br>
+        03/05 健診センター<br>
+        02/28 医療ITベンダー
+      </div>
+      <div style="font-family:var(--mono);font-size:9px;color:#442222;margin-top:8px">⚠ 研修シミュレーションです</div>
+    </div>
+  </div>
+  <div class="ransom-fixed-btn">
+    <button onclick="closeRansom()">✕ シミュレーションを閉じる</button>
+  </div>
+</div>
+
+<!-- ===== DARK WEB OVERLAY ===== -->
+<div class="darkweb-overlay" id="dwOverlay">
+  <div class="overlay-close-sticky"><button onclick="closeDW()">✕ 閉じる</button></div>
+  <div class="dw-header">
+    <h2>🧅 DARK MARKET — 医療情報売買所</h2>
+    <p>Tor Hidden Service — Hunters International リークサイト (模擬)</p>
+  </div>
+  <div class="dw-onion">http://hunters55rdxciehoqzwv7vp...onion/leaks/JP-medical-2026</div>
+  <div style="max-width:600px;margin:12px auto;padding:10px;background:#110808;border:1px solid #331111;font-family:var(--mono);font-size:10px;color:#884444">
+    <strong style="color:#ff4444">⚡ THREAT INTEL — 2026年3月 アクティブな攻撃グループ:</strong><br>
+    <span style="color:#ff6666">NetRunner</span> — 保守用VPN標的・二重恐喝・患者データ窃取<br>
+    <span style="color:#ff6666">Hunters International</span> (Hive後継) — 日本の製造・医療を標的・急拡大中<br>
+    <span style="color:#ff6666">The Gentlemen</span> — <strong>03/21 メディカ出版+海外医療機器を同時攻撃</strong>・BYOVD手法でセキュリティソフト無効化<br>
+    <span style="color:#ff6666">Handala Hack</span> — Intune等の管理基盤を武器化・20万台破壊<br>
+    <span style="color:#888">APT41 (中国の関与が疑われる): 4月新年度の組織改編を狙い認証情報窃取が活発化</span><br>
+    <span style="color:#888">Lazarus (北朝鮮の関与が疑われる): 医療研究機関の技術情報窃取＋中規模病院への仮想通貨身代金要求</span><br>
+    <span style="color:#888">最多侵入経路: 保守業者リモートアクセスアカウント奪取 → 院内横展開</span><br>
+    <span style="color:#555;font-size:9px">※ 国家の関与は各セキュリティ機関の分析に基づく推定であり、他の国・組織が関与している可能性もあります</span>
+  </div>
+  <div class="dw-listings" id="dwListings"></div>
+  <div style="text-align:center;padding:16px;color:#444;font-family:var(--mono);font-size:11px">
+    ⚠ これはセキュリティ研修用のシミュレーションです
+  </div>
+  <button class="dw-dismiss" onclick="closeDW()">✕ 閉じて対策を確認する</button>
+</div>
+
+<!-- ===== SUMMARY OVERLAY ===== -->
+<div class="summary-overlay" id="summaryOverlay">
+  <div class="overlay-close-sticky"><button onclick="closeSummary()">✕ 閉じる</button></div>
+  <div class="summary-content">
+    <div class="summary-header">
+      <h2>🔍 攻撃者が知った あなたの情報</h2>
+      <p>たった数分の体験で、これだけの情報が集まりました</p>
+      <p style="font-family:var(--mono);font-size:10px;color:var(--red);margin-top:8px">※ 2026年3月時点で、以下の攻撃グループが日本の医療機関を積極的に標的としています</p>
+    </div>
+    <div id="summaryCards"></div>
+    <div class="summary-verdict">
+      <h3>⚠ これだけあれば、攻撃は成立します</h3>
+      <p id="summaryVerdict"></p>
+    </div>
+    <button class="summary-dismiss" onclick="closeSummary()">🛡️ 「医療を止めない」— 防衛の決断をする</button>
+  </div>
+</div>
+
+<script>
+// ===== AUDIO (disabled) =====
+function beep() {}
+function alarmBeep() {}
+function dangerBeep() {}
+function encryptBeep() {}
+
+// ===== STATE: collected "intel" =====
+const intel = { password: null, crackTime: null, exif: null, phishScore: null, wifiScenario: null, shadowRisks: [] };
+
+// ===== TAB NAVIGATION =====
+function showTab(id) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('p-' + id).classList.add('active');
+  event.currentTarget.classList.add('active');
+}
+
+// ===== 1. PASSWORD CRACKER =====
+function crackPW() {
+  const pw = document.getElementById('pwInput').value;
+  if (!pw) return;
+  
+  intel.password = pw;
+  const result = document.getElementById('crackResult');
+  const anim = document.getElementById('crackAnim');
+  const timeEl = document.getElementById('crackTime');
+  const meter = document.getElementById('meter');
+  const tips = document.getElementById('pwTips');
+
+  result.style.display = 'block';
+  anim.innerHTML = '';
+  
+  
+  alarmBeep();
+
+  // ===== WORLD-CLASS PASSWORD ANALYSIS ENGINE =====
+  
+  // 1. Common passwords (Top 1000+ from Have I Been Pwned / SecLists + Japanese)
+  const commonEN = ['123456','password','12345678','qwerty','123456789','12345','1234','111111','1234567','dragon','123123','baseball','abc123','football','monkey','letmein','shadow','master','666666','qwertyuiop','123321','mustang','1234567890','michael','654321','superman','1qaz2wsx','7777777','121212','000000','qazwsx','123qwe','killer','trustno1','jordan','jennifer','zxcvbnm','asdfgh','hunter','buster','soccer','harley','batman','andrew','tigger','sunshine','iloveyou','2000','charlie','robert','thomas','hockey','ranger','daniel','starwars','klaster','112233','george','computer','michelle','jessica','pepper','1111','zxcvbn','555555','11111111','131313','freedom','777777','pass','maggie','159753','aaaaaa','ginger','princess','joshua','cheese','amanda','summer','love','ashley','nicole','chelsea','biteme','matthew','access','yankees','987654321','dallas','austin','thunder','taylor','matrix','mobilemail','xxxxxx','welcome','whatever','test','mercedes','phoenix','ferrari','corvette','admin','passw0rd','password1','password123','admin123','root','toor','guest','login','welcome1','changeme','letmein1','master1','abc1234','p@ssw0rd','P@ssw0rd','Passw0rd','Password1','P@ssword1','Admin123','Welcome1','Qwerty123','Abc12345'];
+  const commonJP = ['sakura','fujisan','nihon','tokyo','osaka','kawaii','tanaka','yamada','sato','suzuki','takahashi','honda','nissan','toyota','pokemon','naruto','onepiece','dragonball','samurai','ninja','sumo','wasabi','sushi','ramen','bento','sensei','karate','judo','kendo','sakura2024','sakura2025','sakura2026','hokusoh','hospital','kango','iryo','karte','denshi','byoin','igaku','nms','nichii','password1234','1234abcd','abcd1234','qwerty123','asdf1234','zxcv1234','test1234','admin1234','user1234'];
+  const commonAll = [...commonEN,...commonJP];
+  
+  const pwLower = pw.toLowerCase();
+  const isCommon = commonAll.some(c => c.toLowerCase() === pwLower);
+  
+  // 2. L33t speak decode and check
+  const l33tMap = {'@':'a','4':'a','3':'e','1':'i','!':'i','0':'o','$':'s','5':'s','7':'t','+':'t','8':'b'};
+  let decoded = '';
+  for (const ch of pw.toLowerCase()) decoded += l33tMap[ch] || ch;
+  const isL33tCommon = !isCommon && commonAll.some(c => c.toLowerCase() === decoded);
+  
+  // 3. Keyboard walk detection (comprehensive)
+  const kbRows = ['1234567890-=','qwertyuiop[]','asdfghjkl;\'','zxcvbnm,./','!@#$%^&*()_+'];
+  const kbRowsJP = ['1234567890','qwertyuiop','asdfghjkl','zxcvbnm'];
+  function isKbWalk(s, minLen=4) {
+    const sl = s.toLowerCase();
+    for (const row of [...kbRows,...kbRowsJP]) {
+      for (let i = 0; i <= row.length - minLen; i++) {
+        if (sl.includes(row.substring(i, i + minLen))) return true;
+        const rev = row.substring(i, i + minLen).split('').reverse().join('');
+        if (sl.includes(rev)) return true;
+      }
+    }
+    return false;
+  }
+  const hasKbWalk = isKbWalk(pw);
+  
+  // 4. Date pattern detection
+  const datePatterns = [
+    /^(19|20)\d{2}(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01])$/,
+    /^(0[1-9]|[12]\d|3[01])(0[1-9]|1[0-2])(19|20)\d{2}$/,
+    /^(19|20)\d{2}$/,
+    /^\d{1,2}[-/]\d{1,2}[-/]\d{2,4}$/,
+  ];
+  const hasDate = datePatterns.some(r => r.test(pw)) || /^(19[5-9]\d|20[0-2]\d)/.test(pw);
+  
+  // 5. Repeated characters
+  const hasRepeat = /(.)\1{2,}/.test(pw);
+  const allSame = /^(.)\1+$/.test(pw);
+  
+  // 6. Sequential (abc, 123, etc.)
+  function hasSequential(s, minLen=3) {
+    const sl = s.toLowerCase();
+    for (let i = 0; i <= sl.length - minLen; i++) {
+      let isSeqUp = true, isSeqDown = true;
+      for (let j = 1; j < minLen; j++) {
+        if (sl.charCodeAt(i+j) !== sl.charCodeAt(i+j-1) + 1) isSeqUp = false;
+        if (sl.charCodeAt(i+j) !== sl.charCodeAt(i+j-1) - 1) isSeqDown = false;
+      }
+      if (isSeqUp || isSeqDown) return true;
+    }
+    return false;
+  }
+  const hasSeq = hasSequential(pw);
+  
+  // 7. Dictionary word detection (basic English + Japanese romanization)
+  const dictWords = ['password','dragon','master','monkey','shadow','sunshine','princess','football','baseball','superman','batman','pokemon','naruto','hospital','security','welcome','freedom','computer','internet','network','server','system','admin','login','access','database','patient','medical','doctor','nurse','health','clinic'];
+  const hasDictWord = dictWords.some(w => pwLower.includes(w));
+  
+  // 8. Character class analysis
+  const hasLower = /[a-z]/.test(pw);
+  const hasUpper = /[A-Z]/.test(pw);
+  const hasDigit = /[0-9]/.test(pw);
+  const hasSpecial = /[^a-zA-Z0-9]/.test(pw);
+  const hasUnicode = /[^\x00-\x7F]/.test(pw);
+  const hasKana = /[\u3040-\u30FF]/.test(pw);
+  const hasKanji = /[\u4E00-\u9FFF]/.test(pw);
+  
+  let charsetSize = 0;
+  if (hasLower) charsetSize += 26;
+  if (hasUpper) charsetSize += 26;
+  if (hasDigit) charsetSize += 10;
+  if (hasSpecial) charsetSize += 33;
+  if (hasKana) charsetSize += 170;
+  if (hasKanji) charsetSize += 3000;
+  if (hasUnicode && !hasKana && !hasKanji) charsetSize += 100;
+  if (charsetSize === 0) charsetSize = 26;
+  
+  // 9. Effective entropy calculation with penalties
+  let rawEntropy = Math.log2(Math.pow(charsetSize, pw.length));
+  let effectiveEntropy = rawEntropy;
+  
+  // Character class analysis for penalties
+  const classCount = [hasLower,hasUpper,hasDigit,hasSpecial].filter(Boolean).length;
+  const isDigitOnly = hasDigit && !hasLower && !hasUpper && !hasSpecial && !hasKana && !hasKanji;
+  const isLowerOnly = hasLower && !hasUpper && !hasDigit && !hasSpecial && !hasKana && !hasKanji;
+  const isSingleClass = classCount <= 1 && !hasKana && !hasKanji;
+  
+  // Dominant class detection: if 80%+ of chars are from one class, it's essentially that class
+  const digitCount = (pw.match(/[0-9]/g)||[]).length;
+  const lowerCount = (pw.match(/[a-z]/g)||[]).length;
+  const upperCount = (pw.match(/[A-Z]/g)||[]).length;
+  const specialCount = (pw.match(/[^a-zA-Z0-9]/g)||[]).length;
+  const dominantRatio = Math.max(digitCount, lowerCount, upperCount, specialCount) / pw.length;
+  const isDominantDigit = digitCount / pw.length >= 0.8;
+  const isDominantSingleClass = dominantRatio >= 0.8;
+  
+  // Appended complexity: user added 1-2 chars of different type ONLY at start or end
+  const minorityCount = pw.length - Math.max(digitCount, lowerCount, upperCount);
+  const edgeMinority = (()=>{
+    if (minorityCount === 0 || minorityCount > 2) return false;
+    // Check if ALL minority chars are in first 2 or last 2 positions
+    const dominant = digitCount >= lowerCount && digitCount >= upperCount ? /[0-9]/ :
+                     lowerCount >= upperCount ? /[a-z]/ : /[A-Z]/;
+    const first2 = pw.slice(0,2);
+    const last2 = pw.slice(-2);
+    const middle = pw.slice(2,-2);
+    const middleMinority = [...middle].filter(c => !dominant.test(c)).length;
+    return middleMinority === 0; // all minority chars are at edges
+  })();
+  const isAppendedComplexity = classCount >= 2 && minorityCount <= 2 && edgeMinority && pw.length >= 8;
+  
+  // Penalty: common password
+  if (isCommon) effectiveEntropy = 0;
+  else if (isL33tCommon) effectiveEntropy = Math.min(effectiveEntropy, 10);
+  // CRITICAL Penalty: digit-only
+  if (isDigitOnly) effectiveEntropy *= 0.12;
+  // Dominant digit (80%+): nearly as bad as digit-only
+  else if (isDominantDigit) effectiveEntropy *= 0.15;
+  // Appended complexity (just 1-2 chars for show)
+  else if (isAppendedComplexity) effectiveEntropy *= 0.2;
+  // Single character class
+  else if (isSingleClass) effectiveEntropy *= 0.2;
+  // Dominant single class (80%+)
+  else if (isDominantSingleClass) effectiveEntropy *= 0.25;
+  // Only 2 character classes
+  else if (classCount === 2) effectiveEntropy *= 0.6;
+  // Penalty: keyboard walk
+  if (hasKbWalk) effectiveEntropy *= 0.4;
+  // Penalty: date
+  if (hasDate) effectiveEntropy *= 0.3;
+  // Penalty: all same char
+  if (allSame) effectiveEntropy = 1;
+  // Penalty: repeated chars
+  else if (hasRepeat) effectiveEntropy *= 0.6;
+  // Penalty: sequential
+  if (hasSeq) effectiveEntropy *= 0.5;
+  // Penalty: dictionary word base
+  if (hasDictWord) effectiveEntropy *= 0.4;
+  // Penalty: short length (NIST says < 8 is unacceptable)
+  if (pw.length < 8) effectiveEntropy *= 0.3;
+  // Bonus: passphrase (spaces or very long)
+  if (pw.includes(' ') && pw.length >= 16) effectiveEntropy *= 1.3;
+  
+  // 10. Crack time — REALISTIC targeted attack modeling
+  const gpuSpeed = 3e11; // RTX 4090 x8: 300B guesses/sec (NTLM)
+  const bcryptSpeed = 1e5;
+  
+  // Attacker strategy: try the DOMINANT charset first, then expand
+  // If 90% digits + 1 letter, attacker runs: digits-only → digits+1pos_alpha → full
+  let attackCombs;
+  if (isCommon) attackCombs = 1;
+  else if (isL33tCommon) attackCombs = 1000;
+  else if (isDigitOnly) attackCombs = Math.pow(10, pw.length);
+  else if (isDominantDigit || isAppendedComplexity) {
+    // Attacker: base charset attack + positional expansion for minority chars
+    // Effectively: 10^(digitPositions) * 36^(otherPositions) * C(len, otherPositions)
+    const mainLen = Math.max(digitCount, lowerCount, upperCount);
+    const extraLen = pw.length - mainLen;
+    attackCombs = Math.pow(10, mainLen) * Math.pow(62, extraLen) * pw.length;
+  }
+  else if (isLowerOnly) attackCombs = Math.pow(26, pw.length);
+  else if (isSingleClass) attackCombs = Math.pow(charsetSize, pw.length);
+  else if (isDominantSingleClass) {
+    const mainLen = Math.max(digitCount, lowerCount, upperCount);
+    const extraLen = pw.length - mainLen;
+    attackCombs = Math.pow(charsetSize/2, mainLen) * Math.pow(95, extraLen) * pw.length;
+  }
+  else attackCombs = Math.pow(charsetSize, pw.length);
+  
+  const dictAttackTime = (hasDictWord || isL33tCommon) ? 10e9 / gpuSpeed : Infinity;
+  const bruteTime = attackCombs / gpuSpeed;
+  let crackSeconds = Math.min(bruteTime, dictAttackTime);
+  if (isCommon) crackSeconds = 0;
+  if (allSame) crackSeconds = 0.001;
+  
+  // Pattern penalties on time (structural weaknesses only - charset penalties already in attackCombs)
+  if (hasKbWalk && crackSeconds > 1) crackSeconds *= 0.001;
+  if (hasDate && crackSeconds > 1) crackSeconds *= 0.0001;
+  if (hasSeq && crackSeconds > 1) crackSeconds *= 0.01;
+  if (hasRepeat && crackSeconds > 1) crackSeconds *= 0.1;
+  // NOTE: digit-only / single-class penalties are NOT applied here
+  // because attackCombs already uses the correct targeted charset size
+
+  // 11. Classification — CEILING-FIRST approach
+  // Step 1: Determine the MAXIMUM allowed classification based on character diversity
+  let maxAllowedCls = 'strong';
+  
+  if (isDigitOnly) maxAllowedCls = 'fast';
+  else if (isDominantDigit) maxAllowedCls = 'fast';
+  else if (isAppendedComplexity) maxAllowedCls = 'fast';
+  else if (isSingleClass) maxAllowedCls = 'fast';
+  else if (isDominantSingleClass) maxAllowedCls = 'medium';
+  else if (classCount === 2 && pw.length < 16) maxAllowedCls = 'medium';
+  if (pw.length < 8) maxAllowedCls = 'instant';
+  if (pw.length >= 8 && pw.length < 12 && maxAllowedCls === 'strong') maxAllowedCls = 'medium';
+  
+  const clsRank = {instant:0,fast:1,medium:2,strong:3};
+  
+  // Step 2: Calculate raw classification from crack time
+  let rawCls;
+  if (isCommon || allSame || crackSeconds < 0.01) rawCls = 'instant';
+  else if (crackSeconds < 3600) rawCls = 'instant';
+  else if (crackSeconds < 86400 * 30) rawCls = 'fast';
+  else if (crackSeconds < 86400 * 365 * 100) rawCls = 'medium';
+  else rawCls = 'strong';
+  
+  // Step 3: Apply ceiling — take the LOWER of raw and max allowed
+  let cls = clsRank[rawCls] <= clsRank[maxAllowedCls] ? rawCls : maxAllowedCls;
+  
+  // Step 4: Generate text AFTER final classification is determined
+  let txt;
+  const ceilingApplied = clsRank[rawCls] > clsRank[maxAllowedCls];
+  
+  if (cls === 'instant') {
+    if (isCommon) txt = '⚡ 即座に突破\n辞書攻撃: 0.001秒以下';
+    else if (allSame) txt = '⚡ 即座に突破\n全文字同一';
+    else if (pw.length < 8) txt = '⚡ NIST不適合\n8文字未満は世界基準で不合格';
+    else if (crackSeconds < 1) txt = '⚡ ' + (crackSeconds*1000).toFixed(0) + 'ミリ秒';
+    else if (crackSeconds < 60) txt = '⚡ ' + crackSeconds.toFixed(1) + '秒';
+    else txt = '⚡ ' + (crackSeconds/60).toFixed(1) + '分';
+  } else if (cls === 'fast') {
+    if (isDigitOnly) txt = '⚠ 数字のみ — 攻撃者が最初に試すパターン';
+    else if (isDominantDigit) txt = '⚠ ほぼ数字 — 1〜2文字足しても攻撃者は見抜く';
+    else if (isAppendedComplexity) txt = '⚠ 見せかけの複雑さ — 末尾に1文字足しただけ';
+    else if (isSingleClass) txt = '⚠ 1種類の文字のみ — 標的型攻撃で短縮';
+    else if (crackSeconds < 86400) txt = '💨 ' + (crackSeconds/3600).toFixed(1) + '時間';
+    else txt = '💨 ' + (crackSeconds/86400).toFixed(0) + '日';
+    if (ceilingApplied) txt += '\n⛔ 文字種の多様性が不足';
+  } else if (cls === 'medium') {
+    if (crackSeconds < 86400*365) txt = '⏱ 約' + (crackSeconds/86400).toFixed(0) + '日';
+    else txt = '⏱ 約' + (crackSeconds/86400/365).toFixed(0) + '年';
+    if (ceilingApplied) txt += '\n⛔ 文字種の多様性不足で降格';
+  } else {
+    if (crackSeconds < 86400*365*1e6) txt = '🛡 約' + (crackSeconds/86400/365).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g,',') + '年';
+    else txt = '🔒 現実的に解読不可能';
+  }
+  
+  // Step 5: Add specific warnings
+  const warnings = [];
+  if (isCommon) warnings.push('辞書攻撃: Have I Been Pwnedの漏洩リストに掲載');
+  if (isL33tCommon) warnings.push('L33t変換検出: 「'+decoded+'」として辞書攻撃で突破');
+  if (isDigitOnly) warnings.push('数字のみ: 攻撃者はdigit-only攻撃を最優先で実行（電話番号・ID・暗証番号パターン）');
+  else if (isDominantDigit) warnings.push('80%以上が数字: 1〜2文字の英字を足しても攻撃者はdigit+α攻撃で突破');
+  else if (isAppendedComplexity) warnings.push('見せかけの複雑さ: 少数の異種文字を末尾に足しただけでは探索空間はほぼ増えない');
+  else if (isSingleClass) warnings.push('1種類の文字のみ: 標的型charset攻撃で探索空間が激減');
+  if (hasKbWalk) warnings.push('キーボードウォーク検出: パターン攻撃で大幅に短縮');
+  if (hasDate) warnings.push('日付パターン検出: わずか数万通りの試行で突破');
+  if (allSame) warnings.push('全文字同一: 1文字と同等のセキュリティ');
+  if (hasRepeat) warnings.push('連続文字検出: エントロピーが大幅に低下');
+  if (hasSeq) warnings.push('連番パターン検出: パターン攻撃の標的');
+  if (hasDictWord) warnings.push('辞書単語検出: ルールベース攻撃で大幅に短縮');
+  if (warnings.length > 0 && !txt.includes('数字のみ') && !txt.includes('1種類')) txt += '\n⚠ ' + warnings[0];
+
+  // Animation
+  const charPool = 'abcdefghijklmnopqrstuvwxyz0123456789!@#$%';
+  let li = 0;
+  const total = 20;
+  function addLine() {
+    if (li >= total) {
+      const f = document.createElement('div');
+      f.className = 'line found';
+      f.textContent = `[CRACKED] PASSWORD FOUND: ${pw}`;
+      anim.appendChild(f);
+      anim.scrollTop = anim.scrollHeight;
+      dangerBeep();
+      
+      
+      showCrackResult();
+      return;
+    }
+    const l = document.createElement('div');
+    l.className = 'line';
+    let att = '';
+    for (let j = 0; j < pw.length; j++) {
+      att += j < Math.floor(li / total * pw.length) ? pw[j] : charPool[Math.floor(Math.random() * charPool.length)];
+    }
+    l.textContent = `[${String(li*4827+Math.floor(Math.random()*1000)).padStart(8,'0')}] trying: ${att}`;
+    anim.appendChild(l);
+    if (anim.children.length > 7) anim.children[0].style.opacity = '0.15';
+    anim.scrollTop = anim.scrollHeight;
+    beep(300 + li * 40, .03, .1);
+    setTimeout(addLine, 50);
+    li++;
+  }
+  addLine();
+
+  function showCrackResult() {
+    intel.crackTime = txt;
+    timeEl.textContent = txt;
+    timeEl.className = 'crack-time ' + cls;
+
+    // Meter based on effective entropy (80 bits = 100%)
+    let pct = Math.min(100, (effectiveEntropy / 80) * 100);
+    if (isCommon || allSame) pct = 1;
+    meter.style.width = pct + '%';
+    meter.style.background = cls==='instant'?'var(--red)':cls==='fast'?'var(--orange)':cls==='medium'?'var(--yellow)':'var(--green)';
+
+    let h = '';
+    
+    // Attack benchmark context
+    h += '<strong style="color:var(--cyan)">📊 攻撃ベンチマーク (RTX 4090 x8):</strong><br>';
+    h += '<span style="color:var(--text-dim)">NTLM: 3,000億回/秒 | SHA-256: 220億回/秒 | bcrypt: 10万回/秒</span><br>';
+    h += '<span style="color:var(--text-dim);font-size:10px">※ 本ツールの推定時間はNTLMハッシュ前提の概算です。実際の解読時間はハッシュ方式・攻撃者のリソース・辞書の質・攻撃手法(マスク攻撃/Markov連鎖/ルールベース等)により大きく変動します。セキュリティ研修での啓発を目的としており、厳密なパスワード強度評価にはzxcvbn等の専門ライブラリの使用を推奨します。</span><br>';
+    h += '<span style="color:var(--text-dim);font-size:10px">出典: Hashcat benchmark v6.2.6 / NIST SP 800-63B (2024改訂) / OWASP ASVS v4.0 / PCI DSS v4.0</span><br><br>';
+    
+    // NIST/OWASP compliance
+    h += '<strong>🏛 世界基準の適合判定：</strong><br>';
+    // NIST
+    if (pw.length < 8 || isCommon) {
+      h += '<span class="bad">❌ NIST SP 800-63B: 不適合</span>';
+      if (pw.length < 8) h += '（8文字未満）';
+      if (isCommon) h += '（漏洩リストに掲載）';
+      h += '<br>';
+    } else {
+      h += '<span class="good">✓ NIST SP 800-63B: 最低基準適合（8文字以上）</span><br>';
+    }
+    // OWASP
+    if (pw.length < 12) {
+      h += '<span class="bad">❌ OWASP推奨: 不適合（12文字未満）</span><br>';
+    } else if (pw.length < 15) {
+      h += '<span class="good">✓ OWASP推奨: 適合（12文字以上）</span><br>';
+    } else {
+      h += '<span class="good">✓ OWASP推奨: 優秀（15文字以上）</span><br>';
+    }
+    // PCI DSS
+    if (pw.length < 12 || !(hasLower && hasUpper && hasDigit)) {
+      h += '<span class="bad">❌ PCI DSS v4.0: 不適合（12文字+大小英数必須）</span><br>';
+    } else {
+      h += '<span class="good">✓ PCI DSS v4.0: 適合</span><br>';
+    }
+    // Japan NISC
+    if (pw.length < 10) {
+      h += '<span class="bad">❌ NISC(内閣サイバー): 不適合（10文字以上推奨）</span><br>';
+    } else {
+      h += '<span class="good">✓ NISC(内閣サイバー): 適合</span><br>';
+    }
+    
+    h += '<br><strong>🔍 脆弱性分析：</strong><br>';
+    
+    // Detailed findings
+    if (isCommon) h += '<span class="bad">❌ 漏洩パスワードDB (Have I Been Pwned) に掲載 → 0.001秒で突破</span><br>';
+    if (isL33tCommon) h += '<span class="bad">❌ L33t speak変換後「'+decoded+'」が辞書に一致 → 辞書+ルール攻撃で突破</span><br>';
+    if (isDigitOnly) h += '<span class="bad">❌ 数字のみ: 攻撃者はまず0-9のみの総当たりを実行（探索空間: 10^'+pw.length+'）。英数記号混合(95^'+pw.length+')と比べて桁違いに脆弱。電話番号・暗証番号・クレカ番号と同じ構造</span><br>';
+    else if (isDominantDigit) h += '<span class="bad">❌ '+Math.round(digitCount/pw.length*100)+'%が数字: 攻撃者は「数字+少数の英字」パターンを専用辞書で攻撃。1〜2文字の英字追加では探索空間はほぼ増えない</span><br>';
+    else if (isAppendedComplexity) h += '<span class="bad">❌ 見せかけの複雑さ: 全'+pw.length+'文字中、異なる文字種はわずか'+minorityCount+'文字。攻撃者はベース部分を先に解析し、残り'+minorityCount+'文字を総当たり</span><br>';
+    else if (isSingleClass) h += '<span class="bad">❌ 1種類の文字のみ: 攻撃者は文字種別の標的型攻撃を優先実行。探索空間が'+charsetSize+'^'+pw.length+'に限定され、フルcharset(95^'+pw.length+')より桁違いに脆弱</span><br>';
+    else if (isDominantSingleClass) h += '<span class="bad">⚠ '+Math.round(dominantRatio*100)+'%が同一文字種: 攻撃者は主要文字種+位置展開で効率的に攻撃</span><br>';
+    if (hasKbWalk) h += '<span class="bad">❌ キーボードウォークパターン → 専用辞書で即突破</span><br>';
+    if (hasDate) h += '<span class="bad">❌ 日付パターン → 年月日の組合せは数万通りしかない</span><br>';
+    if (allSame) h += '<span class="bad">❌ 全文字同一 → 実質1文字のパスワード</span><br>';
+    else if (hasRepeat) h += '<span class="bad">❌ 3文字以上の繰り返し → エントロピー大幅低下</span><br>';
+    if (hasSeq) h += '<span class="bad">❌ 連番パターン (abc, 123等) → パターン攻撃の対象</span><br>';
+    if (hasDictWord) h += '<span class="bad">❌ 辞書単語を含む → ルールベース攻撃で大幅短縮</span><br>';
+    
+    // Length assessment (strict)
+    if (pw.length < 8) h += '<span class="bad">❌ 長さ: '+pw.length+'文字 — NIST最低基準(8文字)未満。論外。</span><br>';
+    else if (pw.length < 10) h += '<span class="bad">❌ 長さ: '+pw.length+'文字 — NISC基準(10文字)未満</span><br>';
+    else if (pw.length < 12) h += '<span class="bad">⚠ 長さ: '+pw.length+'文字 — OWASP/PCI DSS基準(12文字)未満</span><br>';
+    else if (pw.length < 15) h += '<span class="good">✓ 長さ: '+pw.length+'文字 — 基準適合</span><br>';
+    else h += '<span class="good">✓ 長さ: '+pw.length+'文字 — 優秀</span><br>';
+    
+    // Character class assessment
+    if (isDigitOnly) h += '<span class="bad">❌ 文字種: 数字のみ — 攻撃者がdigit-only攻撃を最優先で実行</span><br>';
+    else if (isDominantDigit) h += '<span class="bad">❌ 文字種: '+Math.round(digitCount/pw.length*100)+'%が数字 — 1〜2文字の英字追加では安全にならない</span><br>';
+    else if (isAppendedComplexity) h += '<span class="bad">❌ 文字種: 異なる文字種がわずか'+minorityCount+'文字 — 見せかけの複雑さ</span><br>';
+    else if (isLowerOnly) h += '<span class="bad">❌ 文字種: 小文字のみ — 26文字の探索空間</span><br>';
+    else if (isSingleClass) h += '<span class="bad">❌ 文字種: 1種類のみ — 標的型charset攻撃の対象</span><br>';
+    else if (isDominantSingleClass) h += '<span class="bad">⚠ 文字種: '+Math.round(dominantRatio*100)+'%が同一種 — 多様性不足</span><br>';
+    else if (classCount < 3) h += '<span class="bad">⚠ 文字種: '+classCount+'/4 — 3種類以上推奨</span><br>';
+    else h += '<span class="good">✓ 文字種: '+classCount+'/4</span><br>';
+    
+    if (hasKana || hasKanji) h += '<span style="color:var(--text-dim)">※ 日本語文字を含む（多くのシステムでは使用不可の場合があります）</span><br>';
+    
+    // Effective entropy
+    h += '<br><span style="color:var(--text-dim)">有効エントロピー: '+effectiveEntropy.toFixed(1)+' bits';
+    if (effectiveEntropy < 28) h += '（極めて危険）';
+    else if (effectiveEntropy < 36) h += '（弱い）';
+    else if (effectiveEntropy < 50) h += '（やや弱い）';
+    else if (effectiveEntropy < 65) h += '（普通）';
+    else if (effectiveEntropy < 80) h += '（強い）';
+    else h += '（非常に強い）';
+    h += '</span><br>';
+    
+    // bcrypt note
+    h += '<span style="color:var(--text-dim)">※ bcryptハッシュの場合: 解読に約'+(attackCombs/bcryptSpeed/86400/365 > 1e15 ? '∞' : (attackCombs/bcryptSpeed/86400/365).toExponential(1))+'年（ただし弱いパスワードは辞書攻撃で突破される）</span><br>';
+    
+    // Recommendation
+    h += '<br><strong style="color:var(--green)">💡 推奨パスワード方針：</strong><br>';
+    h += '<span style="color:var(--text-dim);font-size:10px">NIST SP 800-63B / CIS Password Policy Guide 準拠</span><br>';
+    h += '① <strong>15文字以上</strong>を推奨（最低8文字、最大64文字を許可すべき）<br>';
+    h += '② 推測されにくい構成 — 無関係な単語の組合せや数字を挟んだパスフレーズが有効<br>';
+    h += '③ <strong>定期変更は不要</strong> — 漏洩が判明した場合のみ変更する（NIST推奨）<br>';
+    h += '④ <strong>多要素認証(MFA)</strong>を必ず併用 — パスワード単体は防御線の1つに過ぎない<br>';
+    h += '⑤ パスワードマネージャーで<strong>ランダム生成・管理</strong>を推奨<br>';
+    h += '⑥ 漏洩チェック: <a href="https://haveibeenpwned.com/Passwords" target="_blank" style="color:var(--cyan)">Have I Been Pwned</a> で確認<br>';
+    h += '⑦ 強力なパスワード生成: <a href="https://www.trendmicro.com/ja_jp/forHome/campaign/password-generator.html" target="_blank" style="color:var(--cyan)">トレンドマイクロ パスワード作成ツール</a> を活用';
+    tips.innerHTML = h;
+
+    // Ransomware trigger on weak passwords
+    if (cls === 'instant' || cls === 'fast') {
+      setTimeout(() => triggerRansomware(), 3000);
+    }
+  }
+}
+
+// ===== 2. EXIF =====
+const dz = document.getElementById('dropzone');
+if (dz) {
+  dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('dragover'); });
+  dz.addEventListener('dragleave', () => dz.classList.remove('dragover'));
+  dz.addEventListener('drop', e => { e.preventDefault(); dz.classList.remove('dragover'); if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]); });
+}
+
+function handleFile(file) {
+  if (!file || !file.type.startsWith('image/')) return;
+  alarmBeep();
+  
+  const prev = document.getElementById('exifPreview');
+  prev.src = URL.createObjectURL(file);
+  prev.style.display = 'block';
+  document.getElementById('exifResult').style.display = 'block';
+  const grid = document.getElementById('exifGrid');
+  grid.innerHTML = '';
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const exif = parseExif(e.target.result);
+    const items = [
+      { label: 'ファイル名', value: file.name },
+      { label: 'サイズ', value: (file.size/1024).toFixed(1)+' KB' },
+      { label: 'タイプ', value: file.type },
+      { label: '更新日', value: new Date(file.lastModified).toLocaleString('ja-JP') },
+    ];
+
+    intel.exif = { fileName: file.name, hasGPS: false, model: null, dateTime: null };
+
+    if (exif) {
+      if (exif.make) items.push({ label: '📱 メーカー', value: exif.make, d: 1 });
+      if (exif.model) { items.push({ label: '📱 機種名', value: exif.model, d: 1 }); intel.exif.model = exif.model; }
+      if (exif.software) items.push({ label: 'ソフトウェア', value: exif.software });
+      if (exif.dateTime) { items.push({ label: '📅 撮影日時', value: exif.dateTime, d: 1 }); intel.exif.dateTime = exif.dateTime; }
+      if (exif.gps) {
+        items.push({ label: '📍 GPS緯度', value: exif.gps.lat.toFixed(6), d: 1 });
+        items.push({ label: '📍 GPS経度', value: exif.gps.lng.toFixed(6), d: 1 });
+        intel.exif.hasGPS = true;
+        intel.exif.lat = exif.gps.lat;
+        intel.exif.lng = exif.gps.lng;
+      }
+    }
+
+    // Animate each item appearing with beep
+    items.forEach((item, i) => {
+      setTimeout(() => {
+        const div = document.createElement('div');
+        div.className = 'exif-item';
+        div.style.animation = 'fadeIn .3s ease';
+        div.innerHTML = `<div class="exif-label">${item.label}</div><div class="exif-value ${item.d ? 'danger' : ''}">${item.value}</div>`;
+        grid.appendChild(div);
+        if (item.d) dangerBeep();
+      }, i * 300);
+    });
+
+    setTimeout(() => {
+      // Map
+      if (exif && exif.gps) {
+        document.getElementById('mapBox').style.display = 'block';
+        document.getElementById('exifMap').src = `https://www.openstreetmap.org/export/embed.html?bbox=${exif.gps.lng-.005},${exif.gps.lat-.003},${exif.gps.lng+.005},${exif.gps.lat+.003}&layer=mapnik&marker=${exif.gps.lat},${exif.gps.lng}`;
+        
+        
+        
+        alarmBeep(); setTimeout(alarmBeep, 400);
+      } else {
+        document.getElementById('mapBox').style.display = 'none';
+      }
+
+      const warn = document.getElementById('exifWarn');
+      let w = [];
+      if (exif && exif.gps) w.push('📍 <strong>GPS座標が検出されました！</strong>撮影場所（自宅・職場）が特定されます');
+      if (exif && exif.model) w.push('📱 <strong>端末が特定可能！</strong>機種情報から個人特定につながります');
+      if (exif && exif.dateTime) w.push('📅 <strong>行動パターン分析可能！</strong>撮影時刻が記録されています');
+      if (w.length) {
+        warn.innerHTML = '<strong>⚠ 以下の個人情報が漏洩します：</strong><br><br>' + w.join('<br><br>') + '<br><br>💡 SNS投稿前に位置情報を削除しましょう';
+        warn.style.borderColor = warn.style.color = 'var(--red)';
+        warn.style.background = 'rgba(255,51,102,.1)';
+      } else {
+        warn.innerHTML = '✓ GPS情報は検出されませんでした';
+        warn.style.borderColor = warn.style.color = 'var(--green)';
+        warn.style.background = 'rgba(0,255,136,.05)';
+      }
+    }, items.length * 300 + 200);
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+// Minimal EXIF parser
+function parseExif(buf){const v=new DataView(buf);if(v.getUint16(0)!==0xFFD8)return null;let o=2;while(o<v.byteLength-2){const m=v.getUint16(o);if(m===0xFFE1){return parseExifData(buf,o+4,v.getUint16(o+2)-2)}if((m&0xFF00)!==0xFF00)break;o+=2+v.getUint16(o+2)}return null}
+function parseExifData(buf,start,len){const v=new DataView(buf,start,len);if(String.fromCharCode(v.getUint8(0),v.getUint8(1),v.getUint8(2),v.getUint8(3))!=='Exif')return null;const ts=start+6;const t=new DataView(buf,ts);const le=t.getUint16(0)===0x4949;function g16(o){return t.getUint16(o,le)}function g32(o){return t.getUint32(o,le)}function gStr(o,l){let s='';for(let i=0;i<l;i++){const c=t.getUint8(o+i);if(c===0)break;s+=String.fromCharCode(c)}return s.trim()}function readIFD(off){const tags={};try{const cnt=g16(off);for(let i=0;i<cnt;i++){const eo=off+2+i*12;const tag=g16(eo);const typ=g16(eo+2);const nv=g32(eo+4);let vo=eo+8;if(typ===2&&nv>4)vo=g32(eo+8);if(typ===5&&nv>=1)vo=g32(eo+8);tags[tag]={type:typ,numValues:nv,valOff:vo,raw:g32(eo+8)}}}catch(e){}return tags}function rat(o){return g32(o)/g32(o+4)}function gpsC(tag){const o=tag.valOff;return rat(o)+rat(o+8)/60+rat(o+16)/3600}const r={};try{const i0=readIFD(g32(4));if(i0[0x010F])r.make=gStr(i0[0x010F].type===2&&i0[0x010F].numValues>4?i0[0x010F].valOff:i0[0x010F].valOff,i0[0x010F].numValues);if(i0[0x0110])r.model=gStr(i0[0x0110].type===2&&i0[0x0110].numValues>4?i0[0x0110].valOff:i0[0x0110].valOff,i0[0x0110].numValues);if(i0[0x0131])r.software=gStr(i0[0x0131].numValues>4?i0[0x0131].valOff:i0[0x0131].valOff,i0[0x0131].numValues);if(i0[0x0132])r.dateTime=gStr(i0[0x0132].numValues>4?g32(i0[0x0132].valOff):i0[0x0132].valOff,20);if(i0[0x8769]){const ex=readIFD(i0[0x8769].raw);if(ex[0xA002])r.width=ex[0xA002].raw;if(ex[0xA003])r.height=ex[0xA003].raw;if(ex[0x9003]&&!r.dateTime)r.dateTime=gStr(ex[0x9003].numValues>4?ex[0x9003].valOff:ex[0x9003].valOff,20)}if(i0[0x8825]){const gi=readIFD(i0[0x8825].raw);if(gi[2]&&gi[4]){let lat=gpsC(gi[2]),lng=gpsC(gi[4]);if(gi[1]){const ref=gStr(gi[1].valOff,2);if(ref==='S')lat=-lat}if(gi[3]){const ref=gStr(gi[3].valOff,2);if(ref==='W')lng=-lng}if(lat||lng)r.gps={lat,lng}}}}catch(e){}return Object.keys(r).length?r:null}
+
+// ===== 3. PHISHING QUIZ (EDUCATIONAL) =====
+const quizData=[
+{
+  skill:'STEP 1: ドメインの末尾を見る',
+  lesson:'URLで最も重要なのは<strong style="color:var(--cyan)">ドメインの末尾（.co.jp / .com の直前）</strong>です。<br>例: https://<strong style="color:var(--red)">偽の名前</strong>.evil.com ← 本当のドメインは「evil.com」<br>攻撃者は有名企業名をサブドメインに入れて騙します。',
+  s:'Amazonからの注文確認',
+  c:'「お支払い方法に問題があります。更新してください」',
+  hint:'💡 ドメインの末尾に注目。「amazon」はどこにある？',
+  opts:[
+    {url:'https://amazon-support.security-update.com/payment',real:0},
+    {url:'https://www.amazon.co.jp/gp/css/order-history',real:1}
+  ],
+  exp:'偽URLの本当のドメインは<strong style="color:var(--red)">security-update.com</strong>です。「amazon-support」はサブドメインに過ぎません。<br><br><strong>覚え方：</strong>「.com」「.co.jp」の直前の単語が本当のドメイン名です。'
+},
+{
+  skill:'STEP 2: 1文字の違いを見抜く',
+  lesson:'攻撃者は本物と<strong style="color:var(--cyan)">1文字だけ違う</strong>ドメインを取得します（ホモグラフ攻撃）。<br>例: 「o → 0（ゼロ）」「l（エル）→ I（大文字アイ）」「rn → m」<br>人間の目では見分けがほぼ不可能な場合もあります。',
+  s:'銀行からの緊急メール',
+  c:'「お客様のアカウントに不正アクセスがありました」',
+  hint:'💡 銀行名のスペルを1文字ずつ確認してみてください',
+  opts:[
+    {url:'https://www.mizuhobank.co.jp/verify/account',real:1},
+    {url:'https://www.mizuh0bank.co.jp/verify/account',real:0}
+  ],
+  exp:'偽URLでは「<strong style="color:var(--green)">o</strong>（オー）」が「<strong style="color:var(--red)">0</strong>（ゼロ）」に置き換わっています。<br>mizuh<strong style="color:var(--green)">o</strong>bank → mizuh<strong style="color:var(--red)">0</strong>bank<br><br><strong>対策：</strong>メールのリンクは直接クリックせず、ブックマークや検索から正規サイトへアクセスしましょう。'
+},
+{
+  skill:'STEP 3: 政府機関のドメインを知る',
+  lesson:'日本の<strong style="color:var(--cyan)">政府機関は必ず「.go.jp」</strong>を使います。<br>「.info」「.com」「.org」は政府機関ではありません。<br>同様に大学は「.ac.jp」、企業は「.co.jp」が正規です。',
+  s:'厚生労働省からのお知らせ',
+  c:'「新型感染症に関する重要なお知らせ。詳細はこちら」',
+  hint:'💡 ドメインの末尾は「.go.jp」？ それとも別のもの？',
+  opts:[
+    {url:'https://www.mhlw.go.jp/stf/covid-19/notice.html',real:1},
+    {url:'https://mhlw-go-jp.info/stf/covid-19/notice.html',real:0}
+  ],
+  exp:'偽URLのドメインは「<strong style="color:var(--red)">.info</strong>」です。「mhlw-go-jp」は単なるサブドメインの装飾。<br>日本の政府機関 → <strong style="color:var(--green)">.go.jp</strong><br>日本の大学 → <strong style="color:var(--green)">.ac.jp</strong><br>日本の企業 → <strong style="color:var(--green)">.co.jp</strong>'
+},
+{
+  skill:'STEP 4: フォントで見えない文字の罠',
+  lesson:'「<strong style="color:var(--cyan)">l（小文字エル）</strong>」と「<strong style="color:var(--cyan)">I（大文字アイ）</strong>」はフォントによっては完全に同じに見えます。<br>「rn」と「m」、「cl」と「d」なども要注意。<br>URLを目で見るだけでは防げない場合があります。',
+  s:'Microsoft 365 ログイン画面',
+  c:'「セッションが切れました。再度ログインしてください」',
+  hint:'💡 「online」のスペルを1文字ずつ注意深く見てください',
+  opts:[
+    {url:'https://login.microsoftonIine.com/common/oauth2',real:0},
+    {url:'https://login.microsoftonline.com/common/oauth2',real:1}
+  ],
+  exp:'偽URLは「on<strong style="color:var(--red)">I</strong>ine」（大文字アイ）。本物は「on<strong style="color:var(--green)">l</strong>ine」（小文字エル）。<br><br><strong>対策：</strong>ログイン画面はブックマークか、アプリから直接開く。メールやSMSのリンクからは絶対にログインしない。'
+},
+{
+  skill:'STEP 5: 無料ドメインは危険信号',
+  lesson:'<strong style="color:var(--cyan)">「.duckdns.org」「.herokuapp.com」「.tk」「.ml」</strong>などは誰でも無料で取得できるドメインです。<br>正規の企業や医療機関がこれらを使うことはありません。<br>SMSやメールでこれらのドメインが来たら100%偽物です。',
+  s:'宅配便の再配達通知SMS',
+  c:'「お荷物のお届けにあがりましたが不在でした。再配達はこちら」',
+  hint:'💡 ドメインの末尾を確認。正規企業が無料ドメインを使うことは？',
+  opts:[
+    {url:'https://www.kuronekoyamato.co.jp/redelivery',real:1},
+    {url:'https://kuroneko-yamato.duckdns.org/redelivery',real:0}
+  ],
+  exp:'「<strong style="color:var(--red)">duckdns.org</strong>」は無料のダイナミックDNS。正規企業は独自ドメイン（<strong style="color:var(--green)">.co.jp</strong>）を使用します。<br><br><strong>要注意リスト：</strong>.duckdns.org / .herokuapp.com / .tk / .ml / .cf / .workers.dev'
+},
+{
+  skill:'STEP 6: 院内システムは外部URLにならない',
+  lesson:'<strong style="color:var(--cyan)">院内の電子カルテやシステムのパスワード変更が、外部のクラウドサービス上で行われることはありません。</strong><br>「herokuapp.com」「firebaseapp.com」「vercel.app」等のURLでシステム更新を促すメールは偽物です。',
+  s:'院内システムのアップデート通知',
+  c:'「情報システム部より：セキュリティ更新のためパスワード再設定が必要です」',
+  hint:'💡 院内システムの更新が外部クラウドのURLで来るのは正常？',
+  opts:[
+    {url:'https://emr-update-hospital.herokuapp.com/reset-password',real:0},
+    {url:'https://intra.hospital.ac.jp/emr/security-update',real:1}
+  ],
+  exp:'「<strong style="color:var(--red)">herokuapp.com</strong>」は誰でも無料で使えるクラウド。院内システムの更新は<strong style="color:var(--green)">院内イントラネット（.ac.jp等）</strong>経由です。<br><br><strong>鉄則：</strong>パスワード変更を求めるメールが来たら、メールのリンクは使わず、直接システム管理者に確認してください。'
+},
+{
+  skill:'総合テスト: すべてのスキルを使って判定',
+  lesson:'これまで学んだ6つのスキルを総動員してください：<br>① ドメイン末尾の確認<br>② 1文字の違いを見抜く<br>③ .go.jp / .ac.jp / .co.jp の確認<br>④ 紛らわしい文字の罠<br>⑤ 無料ドメインは危険信号<br>⑥ 院内システムは外部URLにならない',
+  s:'カード会社からの利用確認',
+  c:'「不正利用の疑いがあります。以下から確認してください」',
+  hint:'💡 すべてのスキルを使って判定してみましょう',
+  opts:[
+    {url:'https://www.smbc-card.com/mem/cardinfo/verify',real:1},
+    {url:'https://smbc-card.secure-verify.com/cardinfo',real:0}
+  ],
+  exp:'偽URLの本当のドメインは「<strong style="color:var(--red)">secure-verify.com</strong>」。smbc-cardはサブドメインの装飾です（STEP 1で学んだ技術）。<br><br><strong>最終まとめ：</strong>迷ったらリンクをクリックしない。正規サイトにはブックマークやアプリからアクセスする。これが最強の防御です。'
+},
+];
+let qs={cur:0,ok:0,ng:0,qs:[]};
+function shuffle(a){const b=[...a];for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]]}return b}
+function startQuiz(){
+  // NOT shuffled - progressive learning order
+  qs={cur:0,ok:0,ng:0,qs:[...quizData]};
+  document.getElementById('qArea').style.display='block';
+  document.getElementById('qFinal').style.display='none';
+  showQ();
+}
+function showQ(){
+  const q=qs.qs[qs.cur];
+  document.getElementById('qProg').textContent=`STEP ${qs.cur+1} / ${qs.qs.length}`;
+  document.getElementById('qScore').innerHTML=`<span class="c">正解 ${qs.ok}</span> ｜ <span class="w">不正解 ${qs.ng}</span>`;
+  
+  // Show lesson
+  const lessonEl=document.getElementById('qLesson');
+  lessonEl.style.display='block';
+  document.getElementById('qLessonTitle').textContent='📖 '+q.skill;
+  document.getElementById('qLessonBody').innerHTML=q.lesson;
+  
+  // Show question
+  document.getElementById('qQ').innerHTML=`<h3>🎣 ${q.s}</h3><p>${q.c}</p>`;
+  
+  // Show hint
+  const hintEl=document.getElementById('qHighlight');
+  hintEl.style.display='block';
+  hintEl.innerHTML=`<span style="color:var(--orange)">${q.hint}</span><br><span style="color:var(--text-dim)">↓ 本物のURLはどっち？</span>`;
+  
+  const oe=document.getElementById('qOpts');
+  oe.innerHTML='';
+  // Don't shuffle first 3 questions (keep order for learning), shuffle rest
+  const opts = qs.cur < 3 ? [...q.opts] : shuffle(q.opts);
+  opts.forEach(opt=>{
+    const b=document.createElement('button');
+    b.className='url-opt';
+    b.textContent=opt.url;
+    b.onclick=()=>pickA(b,opt.real,q);
+    oe.appendChild(b);
+  });
+  document.getElementById('qExp').style.display='none';
+  document.getElementById('qNext').style.display='none';
+}
+function pickA(btn,isReal,q){
+  document.querySelectorAll('.url-opt').forEach(b=>b.disabled=true);
+  if(isReal){btn.classList.add('ok');qs.ok++;beep(800,.1)}
+  else{btn.classList.add('ng');qs.ng++;dangerBeep();document.querySelectorAll('.url-opt').forEach(b=>{if(!b.classList.contains('ng'))b.classList.add('ok')})}
+  document.getElementById('qScore').innerHTML=`<span class="c">正解 ${qs.ok}</span> ｜ <span class="w">不正解 ${qs.ng}</span>`;
+  const ex=document.getElementById('qExp');
+  ex.innerHTML=`<strong>${isReal?'✅ 正解！':'❌ 不正解！'}</strong><br><br>${q.exp}`;
+  ex.style.display='block';
+  // Hide lesson after answer to save space
+  document.getElementById('qLesson').style.display='none';
+  document.getElementById('qHighlight').style.display='none';
+  if(qs.cur<qs.qs.length-1)document.getElementById('qNext').style.display='block';
+  else setTimeout(showFinal,1500);
+}
+function nextQ(){qs.cur++;showQ()}
+function showFinal(){
+  intel.phishScore=`${qs.ok}/${qs.qs.length}`;
+  document.getElementById('qArea').style.display='none';
+  const f=document.getElementById('qFinal');f.style.display='block';
+  const pct=Math.round(qs.ok/qs.qs.length*100);
+  const t=document.getElementById('fScore');
+  t.textContent=`${qs.ok} / ${qs.qs.length} 正解 (${pct}%)`;
+  t.style.color=pct>=80?'var(--green)':pct>=50?'var(--orange)':'var(--red)';
+  let msg='';
+  if(pct>=80) msg='素晴らしい！学んだスキルをしっかり活用できています。日常でも「ドメイン末尾の確認」を習慣にしてください。';
+  else if(pct>=50) msg='いくつかの手口に引っかかりました。特に間違えた問題のスキルを復習しましょう。迷ったらリンクをクリックしないのが鉄則です。';
+  else msg='多くの手口に騙されてしまいました。でも大丈夫、これは学ぶための体験です。もう一度チャレンジして、6つのスキルを身につけましょう。';
+  msg+='<br><br><strong style="color:var(--green)">🛡 最強の防御法：</strong>メールやSMSのリンクは直接クリックしない。正規サイトにはブックマーク・アプリ・検索からアクセスする。';
+  document.getElementById('fMsg').innerHTML=msg;
+  setTimeout(()=>showDarkWeb(),2000);
+}
+startQuiz();
+
+// ===== 4. WIFI =====
+const wifiData={cafe:{ssid:'CafeFreWiFi',victims:[{name:'田中',ip:'192.168.1.23'},{name:'佐藤',ip:'192.168.1.47'},{name:'鈴木',ip:'192.168.1.88'}],pkts:[{proto:'HTTP',data:'GET /login?user=tanaka_k&pass=sakura2024',d:1,note:'💀 ID・パスワードが丸見え！'},{proto:'DNS',data:'Query: www.amazon.co.jp → 52.119.161.5'},{proto:'HTTP',data:'Cookie: session_id=a8f3bc91e2d4; user_token=eyJhbGci...',d:1,note:'💀 セッション盗取でなりすまし可能！'},{proto:'HTTP',data:'POST /payment card=4532-XXXX-XXXX-7891&cvv=123',d:1,note:'💀 クレカ番号が平文！'},{proto:'HTTP',data:'POST /login email=sato@company.jp&password=P@ssw0rd1',d:1,note:'💀 メアド＆パスワード丸見え！'},{proto:'HTTP',data:'GET /patient/records?id=12345&auth=basic dGFuYWthOm15cGFzcw==',d:1,note:'💀 Base64は暗号化ではない！復号は一瞬'}],msg:'フリーWi-Fiでは通信が傍受可能。HTTP接続のログイン・決済は平文で見えています。<br><br>💡 公衆Wi-Fiではhttps://のみ利用。VPNかモバイル回線で。'},
+hospital:{ssid:'Hospital_Staff_WiFi',victims:[{name:'看護師A',ip:'10.0.10.15'},{name:'医師B',ip:'10.0.10.22'}],pkts:[{proto:'HTTP',data:'GET /emr/patient?id=00123456&name=山田太郎',d:1,note:'💀 患者IDと氏名が平文！'},{proto:'HTTP',data:'POST /order entry=血液検査&patient=佐藤花子&DOB=1985-03-15',d:1,note:'💀 オーダリングに個人情報！'},{proto:'HTTP',data:'Cookie: staff_session=dr.yamamoto; role=physician',d:1,note:'💀 医師セッション漏洩→なりすまし診療可能！'},{proto:'HTTP',data:'POST /prescription drug=モルヒネ10mg&patient_id=00789012',d:1,note:'💀 麻薬処方情報が平文！'},{proto:'HTTP',data:'POST /nursing vitals=BP:180/95,HR:110&note=意識レベル低下',d:1,note:'💀 看護記録が丸見え！'}],msg:'院内Wi-Fiが未暗号化だと、患者情報・処方・職員認証がすべて傍受可能。個人情報保護法・医療法違反に直結します。<br><br>💡 WPA3-Enterprise + 802.1X認証を必須に。電子カルテはTLS暗号化を徹底。'},
+hotel:{ssid:'Hotel_Guest_WiFi',victims:[{name:'出張者A',ip:'172.16.0.55'}],pkts:[{proto:'HTTP',data:'POST /webmail/send to=boss@co.jp&subject=極秘:M&A案件',d:1,note:'💀 機密メールが丸見え！'},{proto:'HTTP',data:'GET /cloud/download?file=決算報告書.xlsx&token=abc123',d:1,note:'💀 社内ファイルURLが傍受された！'},{proto:'HTTP',data:'POST /slack channel=経営会議&text=リストラ対象部署は...',d:1,note:'💀 社内チャットの機密が漏洩！'},{proto:'HTTP',data:'POST /banking/transfer amount=5000000&to=0123456789',d:1,note:'💀 振込情報が平文！'}],msg:'ホテルWi-Fiで業務メールやクラウドにアクセスすると機密情報が漏洩。<br><br>💡 出張時は会社VPN必須。テザリングの方が安全。'}};
+let capInt=null;
+function startCapture(){
+  const sc=wifiData[document.getElementById('wifiSel').value];
+  intel.wifiScenario=document.getElementById('wifiSel').value;
+  const st=document.getElementById('pktStream');
+  st.innerHTML='';
+  if(capInt)clearInterval(capInt);
+  const hd=document.createElement('div');
+  hd.style.cssText='color:var(--green);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border);font-size:10px';
+  hd.innerHTML=`<strong>[CAPTURING]</strong> wlan0 | SSID:"${sc.ssid}" | Ch:6<br>Devices: ${sc.victims.map(v=>`${v.name}(${v.ip})`).join(', ')}`;
+  st.appendChild(hd);
+  let pi=0;
+  capInt=setInterval(()=>{
+    if(pi>=sc.pkts.length){clearInterval(capInt);document.getElementById('wifiWarn').style.display='block';document.getElementById('wifiMsg').innerHTML=sc.msg;dangerBeep();return}
+    const p=sc.pkts[pi];
+    const vic=sc.victims[Math.floor(Math.random()*sc.victims.length)];
+    const now=new Date();
+    const ts=`${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}.${String(now.getMilliseconds()).padStart(3,'0')}`;
+    const d=document.createElement('div');
+    d.className='pkt'+(p.d?' danger':'');
+    d.innerHTML=`<span class="ts">[${ts}]</span> <span class="proto">${p.proto}</span> <span class="src">${vic.ip}</span> → <span class="data">${p.data}</span>`;
+    if(p.note){const n=document.createElement('div');n.style.cssText='color:var(--red);font-weight:bold;padding-left:16px;margin-top:2px;font-size:10px';n.textContent=p.note;d.appendChild(n)}
+    st.appendChild(d);
+    st.scrollTop=st.scrollHeight;
+    if(p.d){dangerBeep();}
+    pi++;
+  },900);
+}
+
+// ===== 5. RANSOMWARE =====
+function triggerRansomware(){
+  const ov=document.getElementById('ransomOverlay');
+  ov.classList.add('active');
+  // Alarm sound
+  let alarmCount=0;
+  const alarmInt=setInterval(()=>{alarmBeep();alarmCount++;if(alarmCount>8)clearInterval(alarmInt)},500);
+
+  // Encrypt files animation
+  const files=['C:\\電子カルテ\\PatientMaster.mdb','C:\\電子カルテ\\OrderEntry\\prescriptions.db','C:\\PACS\\DICOM\\CT_20260315_001.dcm','C:\\PACS\\DICOM\\MRI_series_0042.dcm','C:\\医事会計\\診療報酬_202603.xlsx','C:\\看護支援\\バイタル_3F_ICU.csv','C:\\DWH\\検査結果\\血液_生化学_202603.db','D:\\backup\\EMR_full_20260301.bak','C:\\人事給与\\職員名簿_全職種.xlsx','C:\\地域連携\\紹介状_テンプレート.docx','C:\\栄養科\\食事オーダ.dat','C:\\電子カルテ\\手術記録\\ope_20260324.dat','C:\\放射線治療\\RTPS\\treatment_plans.db','C:\\Intune\\MDM_config_backup.json','C:\\FortiGate\\config_backup_20260320.conf'];
+  const fe=document.getElementById('ransomFiles');
+  fe.innerHTML='';
+  files.forEach((f,i)=>{
+    setTimeout(()=>{
+      const l=document.createElement('div');
+      l.className='rf';
+      l.textContent=`[ENCRYPTING] ${f} ... ██████ LOCKED`;
+      fe.appendChild(l);
+      encryptBeep();
+      fe.scrollTop=fe.scrollHeight;
+    },i*400);
+  });
+
+  // Countdown timer
+  let totalSec=72*3600-2;
+  function updateTimer(){
+    const h=Math.floor(totalSec/3600);
+    const m=Math.floor((totalSec%3600)/60);
+    const s=totalSec%60;
+    document.getElementById('ransomTimer').textContent=`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    totalSec--;
+  }
+  updateTimer();
+  const timerInt=setInterval(updateTimer,1000);
+  ov.dataset.timerInt=timerInt;
+}
+function closeRansom(){
+  const ov=document.getElementById('ransomOverlay');
+  ov.classList.remove('active');
+  clearInterval(Number(ov.dataset.timerInt));
+}
+
+// ===== 6. DARK WEB =====
+function showDarkWeb(){
+  const ov=document.getElementById('dwOverlay');
+  ov.classList.add('active');
+  dangerBeep(); setTimeout(dangerBeep,300);
+
+  const listings=document.getElementById('dwListings');
+  listings.innerHTML='';
+
+  const items=[];
+  if(intel.password){
+    items.push({title:'🔑 ログイン認証情報',detail:`パスワード: <span class="leaked">${intel.password.substring(0,3)}${'*'.repeat(Math.max(0,intel.password.length-3))}</span><br>解析時間: ${intel.crackTime?intel.crackTime.split('\n')[0]:'不明'}<br>入手元: ブルートフォース攻撃`,price:'$2.50',seller:'CrackMaster_JP ★★★★☆ (1,247件)'});
+  }
+  if(intel.exif){
+    let det=`ファイル: <span class="leaked">${intel.exif.fileName}</span>`;
+    if(intel.exif.model) det+=`<br>端末: <span class="leaked">${intel.exif.model}</span>`;
+    if(intel.exif.hasGPS) det+=`<br>GPS: <span class="leaked">${intel.exif.lat?.toFixed(4)}, ${intel.exif.lng?.toFixed(4)}</span>`;
+    if(intel.exif.dateTime) det+=`<br>撮影日時: <span class="leaked">${intel.exif.dateTime}</span>`;
+    det+='<br>入手元: SNS画像メタデータ収集';
+    items.push({title:'📍 位置情報＋端末プロファイル',detail:det,price:intel.exif.hasGPS?'$15.00':'$5.00',seller:'OSINT_Hunter ★★★★★ (3,891件)'});
+  }
+  if(intel.phishScore){
+    const [ok,total]=intel.phishScore.split('/');
+    const vuln=Number(total)-Number(ok);
+    items.push({title:'🎣 フィッシング脆弱性レポート',detail:`判定能力: <span class="leaked">${intel.phishScore} (${vuln}回騙された)</span><br>推定成功率: <span class="leaked">${Math.round(vuln/Number(total)*100)}%</span><br>推奨攻撃: ${vuln>2?'高確率でフィッシング成功':'中程度の注意力 — 巧妙な手口で突破可能'}`,price:'$8.00',seller:'PhishKing_APT ★★★★☆ (892件)'});
+  }
+  if(intel.wifiScenario){
+    items.push({title:'📡 ネットワーク盗聴データ',detail:`傍受元: <span class="leaked">${wifiData[intel.wifiScenario].ssid}</span><br>取得データ: ログイン情報・セッショントークン・決済情報<br>被害者数: <span class="leaked">${wifiData[intel.wifiScenario].victims.length}名</span>`,price:'$25.00',seller:'WiFi_Sniper ★★★★★ (2,156件)'});
+  }
+
+  // Always add generic medical staff item
+  items.push({title:'🏥 医療従事者パッケージ（まとめ売り）',detail:'含まれるデータ: パスワード + 位置情報 + フィッシング脆弱性 + ネットワーク情報<br>用途: <span class="leaked">なりすまし医療従事者・電子カルテ不正アクセス・ランサムウェア標的選定</span><br>取引実績: 2026年だけで国内医療機関10件以上の被害確認済み',price:'$50.00',seller:'DarkMed_Syndicate ★★★★★ (5,421件)'});
+
+  // Real threat context items
+  items.push({title:'🔗 保守VPN認証情報（ScreenConnect）',detail:'対象: <span class="leaked">国内医療機関の保守ベンダー接続口</span><br>脆弱性: CVE-2024-1709 (未パッチ)<br>備考: <span class="leaked">電子カルテサーバーへの直接アクセスが可能</span><br>※ NetRunner / Hunters Int. の主要侵入経路',price:'$500.00',seller:'VPN_Broker_APT ★★★★★ (1,893件)'});
+
+  items.push({title:'📋 2026年 日本医療機関 被害リスト',detail:'<span class="leaked">03/22 西日本中堅病院（外来停止）</span><br><span class="leaked">03/21 メディカ出版+BCN Medical（The Gentlemen同時攻撃）</span><br><span class="leaked">03/15 調剤薬局チェーン（処方箋データ）</span><br><span class="leaked">03/05 首都圏健診センター（バックアップ破損）</span><br><span class="leaked">02/28 医療系ITベンダー（保守ID流出）</span><br>...ほか多数。次の標的リストも販売中。',price:'$200.00',seller:'IntelBroker_JP ★★★★☆ (3,247件)'});
+
+  items.push({title:'🛡→💀 BYOVD攻撃ツールキット（The Gentlemen流）',detail:'概要: <span class="leaked">正規ドライバ署名を悪用してセキュリティソフトを無効化</span><br>対象: Apex One / Windows Defender / FortiClient<br>効果: <span class="leaked">EDR検知を完全回避→ランサムウェア自由展開</span><br>※ 03/21 医療セクターで実戦使用済み',price:'$1,200.00',seller:'BYOVD_Shop ★★★★☆ (412件)'});
+
+  items.push({title:'🎯 4月新年度 標的プロファイル',detail:'時期: <span class="leaked">2026年4月 組織改編・人事異動</span><br>狙い: <span class="leaked">新任管理者の不慣れ・引継ぎ漏れ・認証情報の再設定ミス</span><br>入手元: 国家関与が疑われるAPT偵察チーム SaaS/API脆弱性スキャン<br>含む: 組織図・権限マッピング・VPN設定変更タイミング',price:'$800.00',seller:'APT_Recon ★★★★★ (2,891件)'});
+
+  if(intel.shadowRisks && intel.shadowRisks.length>0){
+    const leaks=intel.shadowRisks.map(r=>'<span class="leaked">'+r+'</span>').join('<br>');
+    items.push({title:'👻 シャドーIT経由 漏洩データパック',detail:'未管理経路で流出:<br>'+leaks+'<br>入手元: <span class="leaked">個人クラウド・SNS・退職者端末から自動収集</span><br>※ 組織のセキュリティ監査を完全にバイパス',price:'$35.00',seller:'ShadowHarvester ★★★★★ (4,102件)'});
+  }
+
+  // Biometric data always added
+  items.push({title:'🧬 生体情報パック（顔＋声紋）',detail:'収集方法: <span class="leaked">偽TikTok/Instagram検証画面でカメラ・マイク権限取得</span><br>ブラウザAPI (getUserMedia) で無断撮影＋録音<br>Telegram Bot APIで直接送信（サーバー経由なし・追跡困難）<br>用途: <span class="leaked">eKYC突破 / ディープフェイク生成 / なりすまし身分証明</span><br>⚠ <span class="leaked">生体情報はリセット不可能 — 一度盗まれたら一生悪用される</span>',price:'$150.00',seller:'BioPhisher_AI ★★★★★ (1,567件)'});
+
+  const dwItems=items;
+  dwItems.forEach((item,idx)=>{
+    setTimeout(()=>{
+      const d=document.createElement('div');
+      d.className='dw-item';
+      d.style.animation='fadeIn .4s ease';
+      d.innerHTML='<div class="dw-item-title">'+item.title+'</div><div class="dw-item-detail">'+item.detail+'</div><div class="dw-price">'+item.price+' <span class="btc">≈ BTC '+(parseFloat(item.price.replace('$',''))/65000).toFixed(6)+'</span></div><div class="dw-seller">'+item.seller+'</div>';
+      listings.appendChild(d);
+      dangerBeep();
+    },idx*600);
+  });
+}
+function closeDW(){
+  document.getElementById('dwOverlay').classList.remove('active');
+  setTimeout(showSummary,500);
+}
+
+// ===== 7. SUMMARY =====
+function showSummary(){
+  const ov=document.getElementById('summaryOverlay');
+  ov.classList.add('active');
+  const cards=document.getElementById('summaryCards');
+  cards.innerHTML='';
+
+  const items=[];
+  if(intel.password){
+    items.push({title:'🔑 パスワード',info:`「${intel.password.substring(0,2)}${'*'.repeat(intel.password.length-2)}」 → ${intel.crackTime?intel.crackTime.split('\n')[0]:'解析済み'}`,attack:'→ 不正ログイン・なりすまし・データ窃取が可能'});
+  }
+  if(intel.exif){
+    let info=`写真: ${intel.exif.fileName}`;
+    if(intel.exif.model) info+=` / 端末: ${intel.exif.model}`;
+    if(intel.exif.hasGPS) info+=' / 📍GPS座標あり';
+    items.push({title:'📸 写真メタデータ',info,attack:intel.exif.hasGPS?'→ 自宅・職場の特定、ストーキング、物理的侵入の下調べ':'→ 端末特定、行動パターン分析'});
+  }
+  if(intel.phishScore){
+    items.push({title:'🎣 フィッシング耐性',info:`正答率: ${intel.phishScore}`,attack:'→ 偽サイトへの誘導、認証情報窃取、マルウェアダウンロード'});
+  }
+  if(intel.wifiScenario){
+    items.push({title:'📡 通信傍受',info:`${wifiData[intel.wifiScenario].ssid} で通信を傍受`,attack:'→ セッションハイジャック、中間者攻撃、情報窃取'});
+  }
+  if(intel.shadowRisks && intel.shadowRisks.length>0){
+    items.push({title:'👻 シャドーIT',info:`${intel.shadowRisks.length}件のシャドーIT行動を検出`,attack:'→ 組織の監査を完全にバイパスする漏洩経路。個人クラウド・私物端末・生成AIへの入力すべてが攻撃者の収集対象'});
+  }
+  items.push({title:'🧬 生体情報窃取リスク',info:'ブラウザのカメラ・マイク権限を悪用した無断撮影・録音',attack:'→ 顔・声はリセット不可能。eKYC突破・ディープフェイク生成・なりすまし身分証明に悪用。パスワードは変えられるが顔は変えられない'});
+  items.push({title:'📸 SNS投稿による情報漏洩',info:'2026年3月23日、職員のSNS投稿により複数の病院が謝罪に追い込まれた実例が発生',attack:'→ 電子カルテ画面のInstagram投稿、TikTokでの院内動画投稿で患者情報が流出。背景に写り込んだだけでも個人情報漏洩として病院全体の信用が失墜。院長名での謝罪文掲載・マスコミ報道・患者離れ・訴訟リスクに発展'});
+
+  items.forEach((item,i)=>{
+    setTimeout(()=>{
+      const c=document.createElement('div');
+      c.className='summary-card';
+      c.style.animation='fadeIn .4s ease';
+      c.innerHTML=`<h4>${item.title}</h4><p>${item.info}<span class="attack">${item.attack}</span></p>`;
+      cards.appendChild(c);
+      beep(600,.05);
+    },i*400);
+  });
+
+  setTimeout(()=>{
+    document.getElementById('summaryVerdict').innerHTML=
+      'たった数分の研修体験だけで、攻撃者は<strong>不正ログイン</strong>、<strong>所在地の特定</strong>、<strong>なりすまし</strong>、<strong>ランサムウェア攻撃</strong>に必要な情報を入手できました。<br><br>'+
+      '<strong style="color:var(--red)">📊 これは「いま」起きていることです：</strong><br>'+
+      '3/21に<strong>The Gentlemen</strong>がメディカ出版と海外医療機器企業を同時攻撃。BYOVD手法でセキュリティソフトを無効化し、医療セクターを明確なターゲットとしています。'+
+      '保守業者のリモートアクセスアカウントを奪取→院内横展開が最多の侵入経路。身代金は152億円規模。<br><br>'+
+      '<strong style="color:var(--red)">📸 2026年3月23日 — SNS投稿で複数の病院が謝罪：</strong><br>'+
+      '職員が電子カルテ画面をInstagramストーリーに投稿、TikTokで院内動画を配信 — 背景に患者名・処方内容が写り込み、病院は院長名で謝罪文を公表する事態に。'+
+      '「悪気はなかった」「すぐ消した」は通用しません。一度ネットに出た情報は回収不可能です。<br><br>'+
+      '<strong style="color:var(--red)">🎯 緊急警告：4月新年度が狙われています</strong><br>'+
+      '国家の関与が疑われるAPT(APT41等)が組織改編・人事異動時期を狙い、新任管理者の不慣れ・引継ぎ漏れ・認証情報の再設定ミスにつけ込む偵察活動を活発化させています。<br><br>'+
+      '<strong style="color:var(--green)">🛡 OODAループで「防衛の決断」を：</strong><br>'+
+      '<strong style="color:var(--cyan)">Observe（観察）</strong>：保守業者のリモートアクセスツール（ScreenConnect等）のバージョン確認。BYOVD対策としてドライバ署名の監査<br>'+
+      '<strong style="color:var(--cyan)">Orient（状況判断）</strong>：ベンダー管理外VPNの棚卸し。The Gentlemen・Hunters Int.の手口と自院の防御態勢を照合<br>'+
+      '<strong style="color:var(--cyan)">Decide（意思決定）</strong>：ゼロトラスト(ZTNA)移行＋都度接続への変更を決定。4月人事異動前に認証情報の総点検を決断<br>'+
+      '<strong style="color:var(--cyan)">Act（実行）</strong>：オフラインバックアップの物理分離を今日から。新年度の引継ぎ時にセキュリティチェックリストを組み込む<br><br>'+
+      '<strong style="color:var(--orange)">👤 今日からできる個人の対策：</strong><br>'+
+      '① パスワードは12文字以上のパスフレーズに変更<br>'+
+      '② 写真の位置情報をオフに設定<br>'+
+      '③ URLはドメイン末尾を確認してからクリック<br>'+
+      '④ 公衆Wi-Fiでは機密情報を扱わない・VPN使用<br>'+
+      '⑤ 「不審なシステム障害」は即座にCSIRTへ報告<br>'+
+      '⑥ 4月の異動・引継ぎ時にアカウント棚卸しを実施<br>'+
+      '⑦ 私物端末・個人クラウドで業務データを扱わない（シャドーIT撲滅）<br>'+
+      '⑧ カメラ・マイク権限は最小限に（生体情報は変更不可）<br>'+
+      '⑨ <strong style="color:var(--red)">院内での撮影・SNS投稿は絶対にしない</strong> — 背景に写り込んだだけで病院全体が謝罪に追い込まれる';
+  },items.length*400+300);
+}
+function closeSummary(){document.getElementById('summaryOverlay').classList.remove('active')}
+
+// ===== 8. APT ATTACK MAP =====
+let aptInterval = null;
+function startAPT() {
+  const canvas = document.getElementById('aptCanvas');
+  const ctx = canvas.getContext('2d');
+  const log = document.getElementById('aptLog');
+  log.innerHTML = '';
+
+  // Resize canvas
+  const rect = canvas.parentElement.getBoundingClientRect();
+  canvas.width = rect.width;
+  canvas.height = rect.height;
+  const W = canvas.width, H = canvas.height;
+
+  // Positions (approximate on canvas)
+  const hospital = { x: W * 0.68, y: H * 0.42, label: '🏥 あなたの病院' };
+  const nations = [
+    { id: 'cn', x: W * 0.42, y: H * 0.38, label: '🔴 APT41系', color: '#ff4444', group: 'APT41' },
+    { id: 'nk', x: W * 0.48, y: H * 0.34, label: '🟡 Lazarus系', color: '#ffaa00', group: 'Lazarus' },
+    { id: 'ru', x: W * 0.15, y: H * 0.22, label: '🟣 LockBit系', color: '#8844ff', group: 'LockBit' },
+  ];
+
+  // Attack log entries per nation
+  const attacks = {
+    cn: [
+      { text: 'SaaS API エンドポイントスキャン開始 (医療予約システム)', phase: 'Recon' },
+      { text: 'Fortinet VPN CVE-2023-27997 脆弱性スキャン実行中', phase: 'Scan' },
+      { text: 'Active Directory 認証情報のブルートフォース試行', phase: 'Intrusion' },
+      { text: '4月人事異動リスト取得 → 新任管理者アカウント特定', phase: 'Recon' },
+      { text: 'ScreenConnect 保守アカウントで初期侵入成功', phase: 'Intrusion' },
+      { text: 'Cobalt Strike Beacon 設置 → C2通信確立', phase: 'C2' },
+      { text: 'DWH (データウェアハウス) への横展開開始', phase: 'Lateral' },
+      { text: '患者マスタDB (300万件) のステージング開始', phase: 'Exfil' },
+      { text: 'DNS トンネリングによるデータ持ち出し (暗号化済み)', phase: 'Exfil' },
+      { text: '潜伏用バックドア設置完了 → 次の指示まで待機', phase: 'Persist' },
+    ],
+    nk: [
+      { text: '医療研究機関の論文DB にフィッシングメール送信', phase: 'Phish' },
+      { text: '研究者端末でマクロ実行 → 初期侵入', phase: 'Intrusion' },
+      { text: '仮想通貨ウォレット関連ファイルの探索', phase: 'Recon' },
+      { text: '提携銀行APIの認証トークン窃取', phase: 'Exfil' },
+      { text: '中規模病院にランサムウェア展開 → BTC身代金要求', phase: 'Ransom' },
+      { text: '身代金交渉チャット開設 (Tor経由)', phase: 'Nego' },
+      { text: '72時間タイマー開始 → 未払い時はデータ公開', phase: 'Extort' },
+    ],
+    ru: [
+      { text: 'RaaS (Ransomware as a Service) ペイロード生成', phase: 'Prep' },
+      { text: 'BYOVD ドライバ署名悪用 → Apex One 無効化', phase: 'Evasion' },
+      { text: 'Windows Defender リアルタイム保護を停止', phase: 'Evasion' },
+      { text: 'FortiClient エージェント強制終了', phase: 'Evasion' },
+      { text: '電子カルテ 全データベースの暗号化開始', phase: 'Encrypt' },
+      { text: 'PACS/DICOM 画像サーバー暗号化中...', phase: 'Encrypt' },
+      { text: 'バックアップサーバー (D:\\backup) 破壊完了', phase: 'Destroy' },
+      { text: '身代金要求ノート展開: 152億円 / 72時間', phase: 'Ransom' },
+    ],
+  };
+
+  // Missiles in flight
+  let missiles = [];
+  let attackIndex = { cn: 0, nk: 0, ru: 0 };
+  let frame = 0;
+
+  function drawMap() {
+    ctx.clearRect(0, 0, W, H);
+
+    // Dark background with grid
+    ctx.fillStyle = '#080c14';
+    ctx.fillRect(0, 0, W, H);
+    ctx.strokeStyle = 'rgba(0,255,136,0.04)';
+    ctx.lineWidth = 1;
+    for (let x = 0; x < W; x += 30) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke(); }
+    for (let y = 0; y < H; y += 30) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+
+    // Simple land masses (very rough)
+    ctx.fillStyle = 'rgba(0,255,136,0.06)';
+    ctx.strokeStyle = 'rgba(0,255,136,0.15)';
+    ctx.lineWidth = 1;
+    // Eurasia blob
+    ctx.beginPath();
+    ctx.ellipse(W*0.35, H*0.35, W*0.3, H*0.22, 0, 0, Math.PI*2);
+    ctx.fill(); ctx.stroke();
+    // Japan
+    ctx.fillStyle = 'rgba(0,255,136,0.12)';
+    ctx.beginPath();
+    ctx.ellipse(W*0.7, H*0.4, W*0.04, H*0.15, 0.3, 0, Math.PI*2);
+    ctx.fill(); ctx.stroke();
+
+    // Hospital (pulsing)
+    const pulse = Math.sin(frame * 0.05) * 5 + 15;
+    ctx.beginPath();
+    ctx.arc(hospital.x, hospital.y, pulse, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(0,255,136,${0.1 + Math.sin(frame*0.05)*0.05})`;
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(hospital.x, hospital.y, 6, 0, Math.PI * 2);
+    ctx.fillStyle = '#00ff88';
+    ctx.fill();
+    ctx.fillStyle = '#00ff88';
+    ctx.font = '11px "Share Tech Mono"';
+    ctx.textAlign = 'center';
+    ctx.fillText(hospital.label, hospital.x, hospital.y + 22);
+
+    // Nation dots
+    nations.forEach(n => {
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, 5, 0, Math.PI * 2);
+      ctx.fillStyle = n.color;
+      ctx.fill();
+      ctx.fillStyle = n.color;
+      ctx.font = '10px "Share Tech Mono"';
+      ctx.textAlign = 'center';
+      ctx.fillText(n.label, n.x, n.y - 12);
+    });
+
+    // Draw missiles
+    missiles = missiles.filter(m => m.progress <= 1);
+    missiles.forEach(m => {
+      m.progress += 0.012;
+      const x = m.sx + (m.tx - m.sx) * m.progress;
+      const y = m.sy + (m.ty - m.sy) * m.progress - Math.sin(m.progress * Math.PI) * 40;
+
+      // Trail
+      ctx.beginPath();
+      ctx.strokeStyle = m.color;
+      ctx.lineWidth = 2;
+      ctx.globalAlpha = 0.4;
+      const steps = 8;
+      for (let i = 0; i < steps; i++) {
+        const p = Math.max(0, m.progress - i * 0.015);
+        const tx = m.sx + (m.tx - m.sx) * p;
+        const ty = m.sy + (m.ty - m.sy) * p - Math.sin(p * Math.PI) * 40;
+        if (i === 0) ctx.moveTo(tx, ty);
+        else ctx.lineTo(tx, ty);
+      }
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+
+      // Head
+      ctx.beginPath();
+      ctx.arc(x, y, 3, 0, Math.PI * 2);
+      ctx.fillStyle = m.color;
+      ctx.fill();
+
+      // Impact
+      if (m.progress >= 0.95 && !m.impacted) {
+        m.impacted = true;
+        dangerBeep();
+        
+        
+      }
+    });
+
+    // Status text
+    ctx.fillStyle = 'rgba(255,68,68,0.6)';
+    ctx.font = '10px "Share Tech Mono"';
+    ctx.textAlign = 'left';
+    ctx.fillText(`ATTACKS DETECTED: ${missiles.length} active | Frame: ${frame}`, 8, H - 8);
+
+    frame++;
+    aptInterval = requestAnimationFrame(drawMap);
+  }
+
+  // Launch attacks periodically
+  let logEntryCount = 0;
+  const nationKeys = ['cn', 'nk', 'ru'];
+  
+  function launchAttack() {
+    const nk = nationKeys[Math.floor(Math.random() * nationKeys.length)];
+    const nation = nations.find(n => n.id === nk);
+    const atks = attacks[nk];
+    
+    if (attackIndex[nk] < atks.length) {
+      // Launch missile
+      missiles.push({
+        sx: nation.x, sy: nation.y,
+        tx: hospital.x, ty: hospital.y,
+        color: nation.color,
+        progress: 0,
+        impacted: false,
+      });
+
+      // Add log entry after missile arrives
+      const atk = atks[attackIndex[nk]];
+      setTimeout(() => {
+        const entry = document.createElement('div');
+        entry.className = `apt-entry ${nk}`;
+        const now = new Date();
+        const ts = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
+        entry.innerHTML = `<span style="color:var(--text-dim)">[${ts}]</span> <span class="tag ${nk}">${nation.group}</span> <span style="color:#888">[${atk.phase}]</span> ${atk.text}`;
+        log.appendChild(entry);
+        log.scrollTop = log.scrollHeight;
+        logEntryCount++;
+      }, 1200);
+
+      attackIndex[nk]++;
+    } else {
+      attackIndex[nk] = 0; // Loop
+    }
+  }
+
+  // Start
+  drawMap();
+  launchAttack();
+  const attackTimer = setInterval(launchAttack, 2500);
+
+  // Store for cleanup
+  canvas.dataset.attackTimer = attackTimer;
+}
+
+// ===== 9. SHADOW IT DIAGNOSIS =====
+function toggleShadow(el){
+  el.classList.toggle('checked');
+  if(el.classList.contains('checked')){dangerBeep();el.style.animation='fadeIn .3s'}
+}
+function diagnoseShadow(){
+  const items=document.querySelectorAll('.shadow-item.checked');
+  const result=document.getElementById('shadowResult');
+  result.style.display='block';
+  const level=document.getElementById('shadowLevel');
+  const detail=document.getElementById('shadowDetail');
+  
+  intel.shadowRisks=[];
+  let critCount=0,highCount=0,medCount=0;
+  items.forEach(it=>{
+    const risk=it.dataset.risk;
+    const leak=it.dataset.leak;
+    if(risk==='critical')critCount++;
+    if(risk==='high')highCount++;
+    if(risk==='medium')medCount++;
+    intel.shadowRisks.push(leak);
+  });
+  
+  const total=items.length;
+  
+  
+  
+  if(total===0){
+    level.textContent='✅ リスクレベル: LOW';
+    level.style.color='var(--green)';
+    detail.innerHTML='チェック項目が0件です。素晴らしいセキュリティ意識です！<br>ただし、周囲のスタッフにも同じ意識があるか確認してみてください。';
+  } else if(critCount>0 || total>=5){
+    level.textContent='🚨 リスクレベル: CRITICAL';
+    level.style.color='var(--red)';
+    alarmBeep();setTimeout(alarmBeep,300);setTimeout(alarmBeep,600);
+    let html='<span class="leak">あなたのシャドーIT行動から、以下の情報が漏洩するリスクがあります：</span><br><br>';
+    intel.shadowRisks.forEach(r=>{html+='<span class="leak">❌ '+r+'</span><br>'});
+    html+='<br>これらの情報は<strong style="color:var(--red)">組織のセキュリティ監査に一切引っかからない経路</strong>で外部に流出します。';
+    html+='<br>攻撃者はシャドーIT経由の情報を「最も安く・確実に」入手できます。';
+    if(critCount>0) html+='<br><br><strong style="color:var(--red)">⚠ CRITICAL判定の行動が含まれています。直ちに是正が必要です。</strong>';
+    detail.innerHTML=html;
+  } else if(highCount>0 || total>=3){
+    level.textContent='⚠ リスクレベル: HIGH';
+    level.style.color='var(--orange)';
+    dangerBeep();
+    let html='チェックされた行動から、以下の情報流出リスクがあります：<br><br>';
+    intel.shadowRisks.forEach(r=>{html+='<span class="leak">⚠ '+r+'</span><br>'});
+    html+='<br>「バレていないから大丈夫」は最も危険な認知バイアスです。';
+    detail.innerHTML=html;
+  } else {
+    level.textContent='⚡ リスクレベル: MEDIUM';
+    level.style.color='var(--yellow)';
+    let html='いくつかのシャドーIT行動が検出されました：<br><br>';
+    intel.shadowRisks.forEach(r=>{html+='<span class="leak">⚠ '+r+'</span><br>'});
+    html+='<br>今のうちに改善すれば間に合います。';
+    detail.innerHTML=html;
+  }
+}
+
+// ===== 10. PIX REVOLUTION + BIOMETRIC THEFT DEMO =====
+let pixCurrentStep=1;
+function pixNext(step){
+  document.querySelectorAll('.pix-step').forEach(s=>s.classList.remove('active'));
+  document.getElementById('pixStep'+step).classList.add('active');
+  pixCurrentStep=step;
+  beep(400,.05);
+  
+  if(step===2){
+    // Permission request - show warning
+  }
+  if(step===3){
+    // User granted permission - start hidden recording simulation
+    dangerBeep();
+  }
+  if(step===4){
+    // Fake loading = hijack in progress
+    dangerBeep();
+    
+    
+    // After 3 seconds, show the reveal
+    setTimeout(()=>pixNext(5),3000);
+  }
+  if(step===5){
+    // Show hacker's view
+    const reveal=document.getElementById('pixReveal');
+    reveal.innerHTML='';
+    const lines=[
+      {text:'[TROJAN] PixRevolution v2.4 — Operator Control Active',cls:''},
+      {text:'[HOOK] アクセシビリティサービス: バインド完了',cls:''},
+      {text:'[HOOK] 画面オーバーレイ権限: 取得済み',cls:''},
+      {text:'[CAPTURE] 銀行アプリ検出: ○○銀行オンラインバンキング',cls:'hl'},
+      {text:'[HIJACK] 送金先を書き換え中...',cls:'hl'},
+      {text:'[HIJACK] 田中太郎 → 攻撃者口座 (9876543)',cls:'hl'},
+      {text:'[HIJACK] 金額: ¥55,000 → ¥550,000 (10倍に変更)',cls:'hl'},
+      {text:'[OVERLAY] "少々お待ちください" 画面で操作を隠蔽中',cls:''},
+      {text:'[STREAM] 画面キャプチャ → C2サーバーへリアルタイム送信',cls:''},
+      {text:'───────── 生体情報窃取モジュール ─────────',cls:'hl'},
+      {text:'[BIO] ブラウザ権限悪用: カメラAPI起動 (getUserMedia)',cls:'hl'},
+      {text:'[BIO] フロントカメラ: 顔画像キャプチャ完了 (3枚)',cls:'hl'},
+      {text:'[BIO] マイク: 音声サンプル録音完了 (5秒)',cls:'hl'},
+      {text:'[BIO] デバイスフィンガープリント収集:',cls:''},
+      {text:'  OS: Android 14 | CPU: Snapdragon 8 Gen 3',cls:''},
+      {text:'  メモリ: 12GB | バッテリー: 87% | GPS: 35.7XXX, 139.9XXX',cls:'hl'},
+      {text:'[EXFIL] 生体データ → Telegram Bot API で直接送信',cls:'hl'},
+      {text:'[EXFIL] サーバーを経由しないため追跡困難',cls:''},
+      {text:'[RISK] 窃取された顔・声データの悪用シナリオ:',cls:'hl'},
+      {text:'  → eKYC(オンライン本人確認)の突破',cls:'hl'},
+      {text:'  → ディープフェイク動画の生成素材',cls:'hl'},
+      {text:'  → 生体情報はパスワードと違い「リセット不可能」',cls:'hl'},
+      {text:'[AI] 攻撃コード生成にAIが使用された形跡あり',cls:''},
+      {text:'───────── 攻撃完了 ─────────',cls:'hl'},
+      {text:'[DONE] 送金乗っ取り + 生体情報窃取 + デバイス特定 完了',cls:'hl'},
+    ];
+    
+    lines.forEach((l,i)=>{
+      setTimeout(()=>{
+        const div=document.createElement('div');
+        div.style.marginBottom='2px';
+        if(l.cls==='hl') div.style.color='#ff4444';
+        else div.style.color='#00ff88';
+        div.textContent=l.text;
+        reveal.appendChild(div);
+        reveal.scrollTop=reveal.scrollHeight;
+        if(l.cls==='hl') dangerBeep(); else beep(300+i*10,.02,.1);
+      },i*200);
+    });
+    
+    // After all lines, show warning
+    setTimeout(()=>{
+      document.getElementById('pixControl').style.display='block';
+      const warn=document.getElementById('pixWarn');
+      warn.style.display='block';
+      warn.innerHTML='<strong>⚠ これがあなたのスマホで起きていることです</strong><br><br>'+
+        '<strong style="color:#ff8800">📱 PixRevolution型の手口：</strong><br>'+
+        '① 有名ブランドを装った偽アプリをインストールさせる<br>'+
+        '② 「アクセシビリティ権限」で端末の全操作を掌握<br>'+
+        '③ 銀行アプリ起動を検知 → 「お待ちください」画面で隠蔽<br>'+
+        '④ その裏で送金先・金額を書き換え<br>'+
+        '⑤ 画面をC2サーバーにリアルタイム配信<br><br>'+
+        '<strong style="color:#ff8800">🧬 AI時代の新型フィッシング（生体情報窃取）：</strong><br>'+
+        '① TikTok/Instagram風の偽サイトで「カメラ許可」を要求<br>'+
+        '② 許可した瞬間、ブラウザAPI (getUserMedia) で無断撮影・録音<br>'+
+        '③ 顔写真・音声をTelegram Bot APIで攻撃者に直接送信<br>'+
+        '④ 盗まれた生体情報は<strong>リセット不可能</strong> — パスワードは変えられるが顔は変えられない<br>'+
+        '⑤ eKYC突破・ディープフェイク生成の素材に悪用<br><br>'+
+        '<strong style="color:var(--cyan)">💡 対策：</strong><br>'+
+        '• 「アクセシビリティ権限」を要求するアプリはすべて拒否<br>'+
+        '• カメラ・マイク権限は必要最小限のアプリのみに許可<br>'+
+        '• 業務端末には病院支給デバイスのみを使用<br>'+
+        '• 不要なアプリの権限を定期的に見直し';
+    },lines.length*200+500);
+  }
+}
+
+function pixDeny(){
+  beep(800,.1);
+  alert('正解！不審な権限要求は拒否するのが正しい判断です。\\nしかし多くの人が「許可」を押してしまいます。\\n「許可」を押した場合の被害を見てみましょう。');
+  pixNext(3);
+}
+
+function pixRestart(){
+  pixCurrentStep=1;
+  document.querySelectorAll('.pix-step').forEach(s=>s.classList.remove('active'));
+  document.getElementById('pixStep1').classList.add('active');
+  document.getElementById('pixControl').style.display='none';
+  document.getElementById('pixWarn').style.display='none';
+  document.getElementById('pixReveal').innerHTML='';
+}
+
+// Enter key for password
+document.getElementById('pwInput').addEventListener('keydown',e=>{if(e.key==='Enter')crackPW()});
+</script>
+</body>
+</html>
