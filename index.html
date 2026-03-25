@@ -2010,7 +2010,21 @@ function pixRestart(){
 }
 
 // Enter key for password
-document.getElementById('pwInput').addEventListener('keydown',e=>{if(e.key==='Enter')crackPW()});
+document.getElementById('pwInput').addEventListener('keydown', function(e){
+  if (e.key === 'Enter') crackPW();
+});
 </script>
+
+<script>
+// 職員向け簡易パスワード
+(function(){
+  var pass = prompt("職員専用ページです。\nパスワードを入力してください");
+  if(!pass || pass !== "hokuso2026"){
+    alert("アクセスできません");
+    location.href = "about:blank";
+  }
+})();
+</script>
+
 </body>
 </html>
