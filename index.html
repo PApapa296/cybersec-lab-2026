@@ -3044,6 +3044,7 @@ function runPivotAttack2() {
     }
     document.getElementById('pivotOutcome2').style.display = '';
     document.getElementById('pivotOutcome2').scrollIntoView({behavior:'smooth', block:'start'});
+    setTimeout(() => triggerRansomware(), 2000);
   }, totalTime);
 }
 
@@ -3149,6 +3150,7 @@ function runPivotAttack() {
   setTimeout(() => {
     document.getElementById('pivotOutcome').style.display = '';
     document.getElementById('pivotOutcome').scrollIntoView({behavior:'smooth', block:'start'});
+    setTimeout(() => triggerRansomware(), 2000);
   }, 10800);
 }
 
